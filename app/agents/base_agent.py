@@ -43,6 +43,9 @@ class BaseAgent(ABC):
         state.record_decision(self.name, decision.as_payload())
         self.reflect(decision, state)
         explanation = self.explain(decision)
+        message = explanation.get("message") if isinstance(explanation, dict) else None
+        note = message or decision.rationale
+        state.append_feedback(self.name, note)
         if isinstance(outcome, dict):
             outcome.setdefault("explanation", explanation)
         return outcome

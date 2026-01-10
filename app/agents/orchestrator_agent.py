@@ -6,6 +6,7 @@ from .evaluation_agent import EvaluationAgent
 from .hint_strategy_agent import HintStrategyAgent
 from .integrity_agent import IntegrityAgent
 from .learning_diagnosis_agent import LearningDiagnosisAgent
+from ..core.message_bus import MessageBus
 from ..services.problem_repository import ProblemRepository
 from ..services.session_state import SessionState, SubmissionRecord
 
@@ -14,6 +15,7 @@ class OrchestratorAgent:
     def __init__(self, state: SessionState, repository: Optional[ProblemRepository] = None) -> None:
         self.state = state
         self._repository = repository or ProblemRepository()
+        self.bus = MessageBus()
         self.learning_agent = LearningDiagnosisAgent()
         self.adaptation_agent = AdaptationAgent(self._repository)
         self.integrity_agent = IntegrityAgent()
@@ -21,6 +23,12 @@ class OrchestratorAgent:
         self.evaluation_agent = EvaluationAgent()
 
     def handle_event(self, event_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        envelope = {
+            "type": event_type,
+            "payload": payload,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+        self.bus.publish("events", envelope)
         if event_type not in {"focus_lost", "focus_gained", "webcam_alert"}:
             self.state.integrity.advance(datetime.utcnow())
 
@@ -28,6 +36,7 @@ class OrchestratorAgent:
             self.state.mode = payload.get("mode", self.state.mode)
             response = self.adaptation_agent.execute(self.state, payload)
             response.setdefault("meta", {})["skill_profile"] = self.state.skill_profile.as_dict()
+            response["decision_log"] = self.state.decision_history[-3:]
             return response
 
         if event_type == "code_submitted":
@@ -48,6 +57,8 @@ class OrchestratorAgent:
                 "skill_profile": self.state.skill_profile.as_dict(),
                 "integrity": self.state.integrity.as_dict(),
                 "status": self.state.status,
+                "decision_log": self.state.decision_history[-5:],
+                "feedback": self.state.agent_feedback,
             }
             if adaptation_update.get("new_problem"):
                 response["next_problem"] = {
@@ -59,10 +70,14 @@ class OrchestratorAgent:
         if event_type == "hint_requested":
             hint = self.hint_agent.execute(self.state, payload)
             hint["skill_profile"] = self.state.skill_profile.as_dict()
+            # keep log small for hints
+            hint["decision_log"] = self.state.decision_history[-3:]
             return hint
 
         if event_type in {"focus_lost", "focus_gained", "webcam_alert"}:
-            return self.integrity_agent.execute(self.state, {"event": event_type, **payload})
+            integrity_response = self.integrity_agent.execute(self.state, {"event": event_type, **payload})
+            integrity_response["decision_log"] = self.state.decision_history[-3:]
+            return integrity_response
 
         if event_type == "session_end":
             return self._session_summary()
@@ -80,6 +95,8 @@ class OrchestratorAgent:
             "hints": [
                 {"level": hint.level, "timestamp": hint.created_at.isoformat()} for hint in self.state.hints
             ],
+            "decision_log": self.state.decision_history,
+            "feedback": self.state.agent_feedback,
         }
 
     def _describe_submission(self, record: SubmissionRecord) -> Dict[str, Any]:
