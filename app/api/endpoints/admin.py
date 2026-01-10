@@ -1,11 +1,20 @@
 from fastapi import APIRouter
 
+from ...services.session_manager import session_manager
+
+
 router = APIRouter()
+
 
 @router.get("/dashboard")
 def get_dashboard_data():
-    """
-    API endpoint for the admin dashboard to fetch initial data.
-    Real-time updates will be pushed via WebSockets.
-    """
-    return {"active_users": 5, "integrity_flags": 1}
+    sessions = [state.as_summary() for state in session_manager.all_states().values()]
+    total_flags = sum(
+        summary["integrity"]["focus_losses"] + summary["integrity"]["inactivity_flags"] + summary["integrity"]["webcam_flags"]
+        for summary in sessions
+    )
+    return {
+        "active_users": len(sessions),
+        "integrity_flags": total_flags,
+        "sessions": sessions,
+    }
