@@ -29,6 +29,7 @@ SkillProof AI is a prototype agentic platform for technical assessments. Instead
 - **Adaptive Progression** – `AdaptationAgent` promotes to harder problems after passes, remediates after repeated failures, and pauses the session if no suitable challenge is found (triggering administrator review).
 - **Evaluation Scoring** – `EvaluationAgent` records penalties for hint usage, elapsed time, and integrity severity; only fully passing submissions with sufficient score mark test mode sessions as completed.
 - **Decision Explainability** – Each agent returns structured explanations that the orchestrator logs and the UI displays. This forms the basis for compliance/audit trails and ensures users receive rationale for automated actions.
+- **Resilient Error Handling** – Custom `SkillProofError` hierarchy feeds centralized logging, FastAPI exception hooks, and WebSocket safeguards. Agents fail gracefully with `agent_error` payloads, while the orchestrator and session manager persist diagnostic feedback for administrators.
 
 ## Repository Layout
 

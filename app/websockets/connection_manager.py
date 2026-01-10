@@ -1,5 +1,10 @@
 from typing import List
+import logging
+
 from fastapi import WebSocket
+
+
+logger = logging.getLogger("skillproof.websocket")
 
 class ConnectionManager:
     def __init__(self):
@@ -10,16 +15,18 @@ class ConnectionManager:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        try:
+            self.active_connections.remove(websocket)
+        except ValueError:
+            logger.debug("Attempted to remove unknown websocket connection")
 
     async def broadcast(self, message: str):
-        for connection in self.active_connections:
+        for connection in list(self.active_connections):
             try:
                 await connection.send_text(message)
-            except Exception as e:
-                print(f"Could not send to a websocket: {e}")
-                # Consider removing the connection if it's broken
-                # self.disconnect(connection)
+            except Exception as exc:  # pylint: disable=broad-except
+                logger.warning("Websocket send failed", exc_info=exc)
+                self.disconnect(connection)
 
 
 manager = ConnectionManager()

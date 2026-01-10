@@ -6,6 +6,7 @@ from .evaluation_agent import EvaluationAgent
 from .hint_strategy_agent import HintStrategyAgent
 from .integrity_agent import IntegrityAgent
 from .learning_diagnosis_agent import LearningDiagnosisAgent
+from ..core.errors import SkillProofError, build_error_payload
 from ..core.message_bus import MessageBus
 from ..services.problem_repository import ProblemRepository
 from ..services.session_state import SessionState, SubmissionRecord
@@ -23,66 +24,84 @@ class OrchestratorAgent:
         self.evaluation_agent = EvaluationAgent()
 
     def handle_event(self, event_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        envelope = {
-            "type": event_type,
-            "payload": payload,
-            "timestamp": datetime.utcnow().isoformat(),
-        }
-        self.bus.publish("events", envelope)
-        if event_type not in {"focus_lost", "focus_gained", "webcam_alert"}:
-            self.state.integrity.advance(datetime.utcnow())
+        try:
+            envelope = {
+                "type": event_type,
+                "payload": payload,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+            self.bus.publish("events", envelope)
+            if event_type not in {"focus_lost", "focus_gained", "webcam_alert"}:
+                self.state.integrity.advance(datetime.utcnow())
 
-        if event_type == "session_start":
-            self.state.mode = payload.get("mode", self.state.mode)
-            response = self.adaptation_agent.execute(self.state, payload)
-            response.setdefault("meta", {})["skill_profile"] = self.state.skill_profile.as_dict()
-            response["decision_log"] = self.state.decision_history[-3:]
-            return response
+            if event_type == "session_start":
+                self.state.mode = payload.get("mode", self.state.mode)
+                response = self.adaptation_agent.execute(self.state, payload)
+                response.setdefault("meta", {})["skill_profile"] = self.state.skill_profile.as_dict()
+                response["decision_log"] = self.state.decision_history[-3:]
+                return response
 
-        if event_type == "code_submitted":
-            evaluation_bundle = self.evaluation_agent.execute(self.state, payload)
-            submission = self.state.latest_submission()
-            learning = self.learning_agent.execute(
-                self.state,
-                payload,
-                {"submission": submission, "evaluation": evaluation_bundle["result"]},
-            ) if submission else {"type": "learning_diagnosis", "message": "No submission"}
-            adaptation_update = self.adaptation_agent.after_submission(self.state, evaluation_bundle["result"])
+            if event_type == "code_submitted":
+                evaluation_bundle = self.evaluation_agent.execute(self.state, payload)
+                submission = self.state.latest_submission()
+                learning = self.learning_agent.execute(
+                    self.state,
+                    payload,
+                    {"submission": submission, "evaluation": evaluation_bundle["result"]},
+                ) if submission else {"type": "learning_diagnosis", "message": "No submission"}
+                adaptation_update = self.adaptation_agent.after_submission(self.state, evaluation_bundle["result"])
 
-            response: Dict[str, Any] = {
-                "type": "code_feedback",
-                "evaluation": evaluation_bundle["result"],
-                "submission": evaluation_bundle["submission_metrics"],
-                "diagnosis": learning,
-                "skill_profile": self.state.skill_profile.as_dict(),
-                "integrity": self.state.integrity.as_dict(),
+                response: Dict[str, Any] = {
+                    "type": "code_feedback",
+                    "evaluation": evaluation_bundle["result"],
+                    "submission": evaluation_bundle["submission_metrics"],
+                    "diagnosis": learning,
+                    "skill_profile": self.state.skill_profile.as_dict(),
+                    "integrity": self.state.integrity.as_dict(),
+                    "status": self.state.status,
+                    "decision_log": self.state.decision_history[-5:],
+                    "feedback": self.state.agent_feedback,
+                }
+                if adaptation_update.get("new_problem"):
+                    response["next_problem"] = {
+                        "decision": adaptation_update.get("decision"),
+                        "payload": adaptation_update["new_problem"],
+                    }
+                return response
+
+            if event_type == "hint_requested":
+                hint = self.hint_agent.execute(self.state, payload)
+                hint["skill_profile"] = self.state.skill_profile.as_dict()
+                # keep log small for hints
+                hint["decision_log"] = self.state.decision_history[-3:]
+                return hint
+
+            if event_type in {"focus_lost", "focus_gained", "webcam_alert"}:
+                integrity_response = self.integrity_agent.execute(self.state, {"event": event_type, **payload})
+                integrity_response["decision_log"] = self.state.decision_history[-3:]
+                return integrity_response
+
+            if event_type == "session_end":
+                return self._session_summary()
+
+            return {"type": "ack", "message": f"Unhandled event: {event_type}"}
+        except Exception as exc:  # pylint: disable=broad-except
+            err = exc if isinstance(exc, SkillProofError) else SkillProofError(
+                "Orchestrator failed to process event",
+                context={"event_type": event_type, "payload_keys": list(payload.keys())},
+            )
+            error_payload = build_error_payload(err, fallback_code="orchestrator_error").as_dict()
+            self.state.status = "errored"
+            self.state.append_feedback("orchestrator", f"error: {error_payload['message']}")
+            self.state.record_decision("orchestrator", {"decision_type": "error", "error": error_payload, "event": event_type})
+            return {
+                "type": "error",
+                "message": error_payload["message"],
+                "error": error_payload,
                 "status": self.state.status,
                 "decision_log": self.state.decision_history[-5:],
                 "feedback": self.state.agent_feedback,
             }
-            if adaptation_update.get("new_problem"):
-                response["next_problem"] = {
-                    "decision": adaptation_update.get("decision"),
-                    "payload": adaptation_update["new_problem"],
-                }
-            return response
-
-        if event_type == "hint_requested":
-            hint = self.hint_agent.execute(self.state, payload)
-            hint["skill_profile"] = self.state.skill_profile.as_dict()
-            # keep log small for hints
-            hint["decision_log"] = self.state.decision_history[-3:]
-            return hint
-
-        if event_type in {"focus_lost", "focus_gained", "webcam_alert"}:
-            integrity_response = self.integrity_agent.execute(self.state, {"event": event_type, **payload})
-            integrity_response["decision_log"] = self.state.decision_history[-3:]
-            return integrity_response
-
-        if event_type == "session_end":
-            return self._session_summary()
-
-        return {"type": "ack", "message": f"Unhandled event: {event_type}"}
 
     def _session_summary(self) -> Dict[str, Any]:
         submissions = [self._describe_submission(record) for record in self.state.submissions]

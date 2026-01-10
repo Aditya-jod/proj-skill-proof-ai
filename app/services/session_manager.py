@@ -8,6 +8,7 @@ from ..db.session import SessionLocal
 from ..schemas.session import SessionCreate
 from ..schemas.skill_profile import SkillProfileUpdate
 from ..schemas.feedback import AgentFeedbackCreate
+from ..core.errors import ServiceError, build_error_payload
 from .problem_repository import ProblemRepository
 from .session_state import SessionState
 
@@ -26,8 +27,15 @@ class SessionManager:
         state = SessionState(user_id=user_id, mode=mode)
         state.difficulty = meta.get("difficulty", state.difficulty)
         state.topic = meta.get("topic", state.topic)
-        state.session_id = self._create_persistent_session(state)
-        self._hydrate_state(state)
+        try:
+            state.session_id = self._create_persistent_session(state)
+            self._hydrate_state(state)
+        except Exception as exc:  # pylint: disable=broad-except
+            raise ServiceError(
+                "Failed to initialize session",
+                code="session_init_failed",
+                context={"user_id": user_id, "error": str(exc)},
+            ) from exc
         orchestrator = OrchestratorAgent(state, self._problem_repository)
         self._active[user_id] = {"state": state, "agent": orchestrator}
         return self._active[user_id]
@@ -61,6 +69,15 @@ class SessionManager:
                 )
                 crud_agent_feedback.create_feedback(db, payload)
             state.feedback_events.clear()
+        except Exception as exc:  # pylint: disable=broad-except
+            error_payload = build_error_payload(
+                ServiceError(
+                    "Failed to persist feedback",
+                    code="feedback_persist_failed",
+                    context={"session_id": state.session_id, "error": str(exc)},
+                )
+            ).as_dict()
+            state.append_feedback("system", f"error: {error_payload['message']}")
         finally:
             db.close()
 
@@ -72,6 +89,8 @@ class SessionManager:
         try:
             record = crud_session.create_session(db, SessionCreate(user_id=state.user_id, mode=state.mode))
             return record.id
+        except Exception as exc:  # pylint: disable=broad-except
+            raise ServiceError("Failed to create session record", code="session_create_failed", context={"error": str(exc)}) from exc
         finally:
             db.close()
 
@@ -98,6 +117,12 @@ class SessionManager:
                     )
                     crud_agent_feedback.create_feedback(db, payload)
                 state.feedback_events.clear()
+        except Exception as exc:  # pylint: disable=broad-except
+            raise ServiceError(
+                "Failed to finalize session",
+                code="session_finalize_failed",
+                context={"session_id": state.session_id, "error": str(exc)},
+            ) from exc
         finally:
             db.close()
 
@@ -107,6 +132,12 @@ class SessionManager:
             profile = crud_skill_profile.get_profile(db, state.user_id)
             if profile:
                 state.skill_profile = state.skill_profile.from_persistent(profile.as_dict())
+        except Exception as exc:  # pylint: disable=broad-except
+            raise ServiceError(
+                "Failed to hydrate skill profile",
+                code="profile_hydration_failed",
+                context={"user_id": state.user_id, "error": str(exc)},
+            ) from exc
         finally:
             db.close()
 

@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict
 
 from ..core.decision import AgentDecision
+from ..core.errors import AgentExecutionError, build_error_payload
 from ..services.session_state import SessionState
 
 
@@ -37,15 +38,24 @@ class BaseAgent(ABC):
 
     def execute(self, state: SessionState, payload: Dict[str, Any], context: Dict[str, Any] | None = None) -> Dict[str, Any]:
         event = {"payload": payload, "context": context or {}}
-        self.observe(event, state)
-        decision = self.decide(state)
-        outcome = self.act(decision, state)
-        state.record_decision(self.name, decision.as_payload())
-        self.reflect(decision, state)
-        explanation = self.explain(decision)
-        message = explanation.get("message") if isinstance(explanation, dict) else None
-        note = message or decision.rationale
-        state.append_feedback(self.name, note)
-        if isinstance(outcome, dict):
-            outcome.setdefault("explanation", explanation)
-        return outcome
+        try:
+            self.observe(event, state)
+            decision = self.decide(state)
+            outcome = self.act(decision, state)
+            state.record_decision(self.name, decision.as_payload())
+            self.reflect(decision, state)
+            explanation = self.explain(decision)
+            message = explanation.get("message") if isinstance(explanation, dict) else None
+            note = message or decision.rationale
+            state.append_feedback(self.name, note)
+            if isinstance(outcome, dict):
+                outcome.setdefault("explanation", explanation)
+            return outcome
+        except Exception as exc:  # pylint: disable=broad-except
+            wrapped = exc if isinstance(exc, AgentExecutionError) else AgentExecutionError(
+                f"{self.name} failed to complete execution", context={"agent": self.name, "payload_keys": list(payload.keys())}
+            )
+            error_payload = build_error_payload(wrapped, fallback_code="agent_error").as_dict()
+            state.record_decision(self.name, {"decision_type": "error", "error": error_payload})
+            state.append_feedback(self.name, f"error: {error_payload['message']}")
+            return {"type": "agent_error", "agent": self.name, "error": error_payload}
