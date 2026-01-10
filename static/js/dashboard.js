@@ -1,5 +1,9 @@
 const tableBody = document.getElementById('session-table-body');
 const connectionStatus = document.getElementById('connection-status');
+const activeUsersCard = document.getElementById('active-users-card');
+const integrityFlagsCard = document.getElementById('integrity-flags-card');
+const solvedCountCard = document.getElementById('solved-count-card');
+
 const clientId = "admin_" + Math.random().toString(36).substr(2, 9);
 const socket = new WebSocket(`ws://localhost:8000/ws/${clientId}`);
 
@@ -14,48 +18,55 @@ socket.onopen = function() {
 
 socket.onmessage = function(event) {
     try {
-        // The backend now sends stringified JSON, so we need to parse it twice.
-        // This is a temporary workaround for the eval call.
-        const rawData = event.data.replace(/'/g, '"'); // Replace single quotes with double
+        const rawData = event.data.replace(/'/g, '"').replace(/True/g, 'true').replace(/False/g, 'false');
         const data = JSON.parse(rawData);
         const userId = data.user_id;
 
         if (!userId) return;
 
-        // Initialize user session if it's the first time we see them
         if (!userSessions[userId]) {
             userSessions[userId] = {
-                status: 'Active',
+                status: 'Configuring',
                 lastEvent: 'Session Started',
                 integrityFlags: 0,
-                lastUpdate: new Date()
+                lastUpdate: new Date(),
+                solved: 0
             };
         }
 
-        // Update session data based on the event
         const session = userSessions[userId];
         session.lastEvent = data.type;
         session.lastUpdate = new Date();
 
-        if (data.type === 'focus_lost') {
-            session.integrityFlags++;
-            session.status = 'Suspicious';
-        }
-        if (data.type === 'focus_gained') {
-            session.status = 'Active';
-        }
-        if (data.type === 'code_submitted') {
-            session.status = 'Evaluating';
-        }
-        if (data.type === 'session_start') {
-            session.status = 'Configuring';
+        switch (data.type) {
+            case 'session_start':
+                session.status = 'Configuring';
+                break;
+            case 'focus_lost':
+                session.integrityFlags++;
+                session.status = 'Suspicious';
+                break;
+            case 'focus_gained':
+                session.status = 'Active';
+                break;
+            case 'code_submitted':
+                session.status = 'Evaluating';
+                // In a real scenario, you'd wait for the evaluation agent's result
+                // For this demo, we'll assume it's solved if the code doesn't have 'error'
+                if (data.result && data.result.analysis && !data.result.analysis.toLowerCase().includes('error')) {
+                    session.solved++;
+                    session.status = 'Solved';
+                }
+                break;
+            case 'problem_assigned':
+                session.status = 'Active';
+                break;
         }
 
-        // Re-render the table
-        renderTable();
+        renderDashboard();
 
     } catch (e) {
-        console.error("Received non-JSON message or malformed data: ", event.data, e);
+        console.error("Error parsing message: ", event.data, e);
     }
 };
 
@@ -65,23 +76,43 @@ socket.onclose = function() {
     connectionStatus.previousElementSibling.classList.add('bg-danger');
 };
 
-function renderTable() {
-    // Clear existing table body
+function renderDashboard() {
     tableBody.innerHTML = '';
+    let totalFlags = 0;
+    let totalSolved = 0;
 
-    for (const userId in userSessions) {
+    const sortedUsers = Object.keys(userSessions).sort((a, b) => 
+        userSessions[b].lastUpdate - userSessions[a].lastUpdate
+    );
+
+    for (const userId of sortedUsers) {
         const session = userSessions[userId];
-        const row = document.createElement('tr');
+        totalFlags += session.integrityFlags;
+        totalSolved += session.solved;
 
-        const flagClass = session.integrityFlags > 0 ? 'bg-warning text-dark' : 'bg-light';
+        const row = document.createElement('tr');
+        const flagClass = session.integrityFlags > 2 ? 'flag-high' : session.integrityFlags > 0 ? 'flag-medium' : '';
+        
+        let statusIcon = 'bi-person';
+        let statusClass = 'status-active';
+        if (session.status === 'Suspicious') { statusIcon = 'bi-eye-slash'; statusClass = 'status-suspicious'; }
+        if (session.status === 'Evaluating') { statusIcon = 'bi-hourglass-split'; statusClass = 'status-evaluating'; }
+        if (session.status === 'Configuring') { statusIcon = 'bi-gear'; statusClass = 'status-configuring'; }
+        if (session.status === 'Solved') { statusIcon = 'bi-check2-circle'; statusClass = 'status-active'; }
+
 
         row.innerHTML = `
             <td>${userId}</td>
-            <td>${session.status}</td>
+            <td><i class="bi ${statusIcon} ${statusClass} status-icon me-2"></i>${session.status}</td>
             <td>${session.lastEvent}</td>
-            <td><span class="badge ${flagClass}">${session.integrityFlags}</span></td>
+            <td><span class="badge rounded-pill ${flagClass}">${session.integrityFlags}</span></td>
             <td>${session.lastUpdate.toLocaleTimeString()}</td>
         `;
         tableBody.appendChild(row);
     }
+
+    // Update summary cards
+    activeUsersCard.textContent = Object.keys(userSessions).length;
+    integrityFlagsCard.textContent = totalFlags;
+    solvedCountCard.textContent = totalSolved;
 }

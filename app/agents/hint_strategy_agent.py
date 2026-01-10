@@ -1,5 +1,7 @@
 from .base_agent import BaseAgent
 
+# Balances when and how hints are delivered so guidance stays meaningful.
+
 class HintStrategyAgent(BaseAgent):
     """
     Decides if and what kind of hint to provide.

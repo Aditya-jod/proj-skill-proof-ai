@@ -1,5 +1,7 @@
 from .base_agent import BaseAgent
 
+# Reviews submissions to understand misconceptions and learning gaps.
+
 class LearningDiagnosisAgent(BaseAgent):
     """
     Analyzes user's code submissions and error patterns.

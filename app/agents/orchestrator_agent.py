@@ -1,4 +1,9 @@
 from .base_agent import BaseAgent
+from .learning_diagnosis_agent import LearningDiagnosisAgent
+from .adaptation_agent import AdaptationAgent
+from .integrity_agent import IntegrityAgent
+
+# Central dispatcher that routes session events to the appropriate specialist agents.
 
 class OrchestratorAgent(BaseAgent):
     """
@@ -10,7 +15,6 @@ class OrchestratorAgent(BaseAgent):
         self.learning_agent = LearningDiagnosisAgent()
         self.adaptation_agent = AdaptationAgent()
         self.integrity_agent = IntegrityAgent()
-        # etc.
 
     def execute(self, data: dict) -> dict:
         event_type = data.get("type")

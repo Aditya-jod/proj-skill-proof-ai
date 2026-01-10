@@ -1,5 +1,7 @@
 from .base_agent import BaseAgent
 
+# Selects problems and difficulty adjustments based on the learner's session profile.
+
 class AdaptationAgent(BaseAgent):
     """
     Adjusts problem difficulty and selects problems based on user performance.
@@ -16,7 +18,7 @@ class AdaptationAgent(BaseAgent):
             return {
                 "title": "Fix the Factorial Function",
                 "difficulty": "Easy",
-                "code": "# The factorial function below has a bug. Can you fix it?\ndef factorial(n):\n    if n = 0:\n        return 1\n    else:\n        return n * factorial(n-1)"
+            "code": "# The factorial function below has a bug. Can you fix it?\ndef factorial(n):\n    if n == 0:\n        return 1\n    else:\n        return n * factorial(n-1)"
             }
         elif difficulty == "medium":
             return {

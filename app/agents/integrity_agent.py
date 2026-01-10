@@ -1,5 +1,7 @@
 from .base_agent import BaseAgent
 
+# Watches for behaviors that might indicate integrity violations during the session.
+
 class IntegrityAgent(BaseAgent):
     """
     Monitors user behavior for academic integrity.

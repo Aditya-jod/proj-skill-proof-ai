@@ -21,14 +21,19 @@ socket.onmessage = function(event) {
         // Initialize the editor now that we have a problem
         initializeEditor(data.payload.code);
         problemTitle.textContent = `Problem: ${data.payload.title}`;
-        sessionModeBadge.textContent = `${data.payload.difficulty} Mode`;
+        const difficulty = data.payload.difficulty;
+        sessionModeBadge.textContent = `${difficulty} Mode`;
+        sessionModeBadge.className = `badge rounded-pill fs-6 bg-${difficulty.toLowerCase() === 'easy' ? 'success' : difficulty.toLowerCase() === 'medium' ? 'warning' : 'danger'}`;
+        
         appendOutputMessage(`> Problem "${data.payload.title}" loaded. Good luck!`, "system");
     } else if (data.hint) {
         appendOutputMessage(`Hint: ${data.hint}`, "hint");
     } else if (data.integrity_action) {
         appendOutputMessage(`Warning: ${data.integrity_action}`, "warning");
     } else {
-        appendOutputMessage(JSON.stringify(data), "info");
+        // Generic message handler
+        const message = data.result?.status || JSON.stringify(data);
+        appendOutputMessage(`> ${message}`, "info");
     }
 };
 
@@ -42,7 +47,8 @@ function initializeEditor(startCode) {
             lineNumbers: true,
             mode: "python",
             theme: "material-darker",
-            indentUnit: 4
+            indentUnit: 4,
+            autofocus: true
         });
     }
     editor.setValue(startCode);
@@ -79,9 +85,16 @@ function startSession() {
         topic: topic
     });
 
-    // Switch UI
-    setupContainer.classList.add('d-none');
-    codingContainer.classList.remove('d-none');
+    // Animate UI transition
+    setupContainer.classList.add('fade-out-up');
+    
+    setTimeout(() => {
+        codingContainer.classList.remove('fade-out-up');
+        codingContainer.classList.add('fade-in-down');
+        setupContainer.style.display = 'none';
+        if(editor) editor.focus();
+    }, 400); // Match CSS transition duration
+
     appendOutputMessage("> Session started. Waiting for problem assignment...", "system");
 }
 

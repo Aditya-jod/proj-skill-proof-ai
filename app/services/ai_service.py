@@ -1,27 +1,42 @@
-from ..config import settings
-# import openai
+from groq import Groq
 
-# openai.api_key = settings.OPENAI_API_KEY
+from ..config import settings
 
 class AIService:
-    """
-    Wrapper for making calls to external AI services (e.g., OpenAI).
-    """
+    """Wrapper around Groq chat completions."""
+
+    def __init__(self) -> None:
+        if not settings.GROQ_API_KEY:
+            raise ValueError("GROQ_API_KEY missing. Add it to your .env file.")
+
+        self._client = Groq(api_key=settings.GROQ_API_KEY)
+        self._model = "llama3-8b-8192"
+
+    def _ask_model(self, prompt: str) -> str:
+        try:
+            completion = self._client.chat.completions.create(
+                model=self._model,
+                temperature=0.4,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return completion.choices[0].message.content
+        except Exception as exc:
+            return f"Error contacting Groq: {exc}"
+
     def get_code_analysis(self, code: str) -> dict:
-        """
-        Sends code to an AI model for analysis.
-        """
-        # Mock response for now
-        print(f"AI Service: Analyzing code...")
-        if "error" in code:
-            return {"analysis": "Code contains a syntax error."}
-        return {"analysis": "Code looks plausible."}
+        prompt = (
+            "Summarize the correctness, style, and one improvement for this Python snippet.\n\n"
+            f"```python\n{code}\n```"
+        )
+        return {"analysis": self._ask_model(prompt)}
 
     def generate_hint(self, context: dict) -> str:
-        """
-        Generates a hint based on the user's context.
-        """
-        print(f"AI Service: Generating hint...")
-        return "Conceptual Hint: Think about the base case for your recursion."
+        code = context.get("code", "# Code not provided")
+        prompt = (
+            "Provide a single actionable hint for the student working on this code."
+            " Avoid giving the solution.\n\n"
+            f"```python\n{code}\n```"
+        )
+        return self._ask_model(prompt)
 
 ai_service = AIService()

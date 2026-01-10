@@ -1,5 +1,7 @@
 from .base_agent import BaseAgent
 
+# Aggregates performance metrics at the end of the assessment.
+
 class EvaluationAgent(BaseAgent):
     """
     Scores the user's performance based on multiple factors.

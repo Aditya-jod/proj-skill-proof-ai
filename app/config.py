@@ -1,15 +1,14 @@
-import os
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
+
 
 class Settings(BaseSettings):
-    """
-    Application settings, loaded from environment variables.
-    """
-    APP_NAME: str = "SkillProof AI"
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./data/skillproof.db")
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    """Application settings loaded from environment variables."""
+
+    DATABASE_URL: str = "sqlite:///./skillproof.db"
+    GROQ_API_KEY: str = ""
 
     class Config:
         env_file = ".env"
+
 
 settings = Settings()
