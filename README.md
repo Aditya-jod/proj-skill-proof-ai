@@ -10,6 +10,9 @@ SkillProof AI is a prototype agentic platform for technical assessments. Instead
 - **Groq-Powered Intelligence** – `AIService` integrates the Groq `llama3-8b-8192` model for code analysis and hint generation.
 - **Integrity Enforcement** – `IntegrityAgent` reacts to tab switches or other suspicious signals and pushes warnings.
 - **SQLite Persistence** – Session metadata is stored via SQLAlchemy against `sqlite:///./skillproof.db`.
+- **Evidence-Based Scoring** – `EvaluationAgent` executes reference tests from the problem bank and applies penalties for hints, delay, and integrity states.
+- **Reasoning Diagnostics** – `LearningDiagnosisAgent` tracks code deltas, attempt cadence, and outcomes to classify guessing vs. mastery and maintain a skill profile.
+- **Guarded Hinting** – `HintStrategyAgent` throttles hint frequency, escalates through conceptual→directional→code granularity, and blocks when limit reached.
 
 ## Repository Layout
 
@@ -26,18 +29,19 @@ app/
 static/                # Frontend assets (landing page, session UI, dashboard)
 templates/             # Server-rendered HTML entry points
 data/                  # SQLite database file lives here once created
+                                            # plus problems.json source of adaptive challenges
 ```
 
 ## Agents Overview
 
 | Agent | Role |
 | --- | --- |
-| `AdaptationAgent` | Chooses a problem template to match selected difficulty/topic. |
-| `LearningDiagnosisAgent` | Reviews submissions to infer misconceptions and update skill profile. |
-| `IntegrityAgent` | Monitors integrity signals (focus loss etc.) and advises warnings. |
-| `HintStrategyAgent` | (Scaffolded) Determines hint style/when to reveal guidance. |
-| `EvaluationAgent` | (Scaffolded) Aggregates scores across correctness, time, hints. |
-| `OrchestratorAgent` | Entry point that wires everything together per user session. |
+| `AdaptationAgent` | Pulls problems from `data/problems.json`, escalates or remediates difficulty after each submission. |
+| `LearningDiagnosisAgent` | Scores reasoning, detects guessing via diff/time heuristics, and updates the skill profile. |
+| `HintStrategyAgent` | Uses recent performance to choose conceptual/directional/code hints while enforcing cooldown and caps. |
+| `IntegrityAgent` | Tracks focus, inactivity, and webcam alerts; escalates from warn → pause → terminate. |
+| `EvaluationAgent` | Executes canonical tests, applies penalties, and emits holistic scores/grades. |
+| `OrchestratorAgent` | State-aware coordinator that bundles evaluation, diagnosis, adaptation, and broadcasts. |
 
 ## Prerequisites
 
@@ -66,15 +70,21 @@ data/                  # SQLite database file lives here once created
     GROQ_API_KEY="gsk_your_actual_key"
     ```
 
-4. **Run migrations (optional)**
-    SQLite tables are created automatically on first boot via SQLAlchemy metadata. Delete `data/skillproof.db` if you need a clean slate.
+4. **Seed challenge catalog**
+    The platform reads problems from `data/problems.json`. Update or extend this file to introduce new challenges, hints, and reference tests. Each entry supports:
+    - `starter_code`: baseline snippet shown to the candidate
+    - `hints`: conceptual/directional/code guidance
+    - `tests`: argument/expected pairs for the evaluator to execute
 
-5. **Launch application**
+5. **Run migrations (optional)**
+    SQLite tables are created automatically on first boot via SQLAlchemy metadata. Delete `data/skillproof.db` if you need a clean slate or to pick up new columns (e.g., when upgrading from earlier scaffolds).
+
+6. **Launch application**
     ```bash
     uvicorn app.main:app --reload
     ```
 
-6. **Open clients**
+7. **Open clients**
     - Landing page: `http://localhost:8000/`
     - Candidate session IDE: `http://localhost:8000/session`
     - Admin dashboard: `http://localhost:8000/dashboard`
@@ -93,6 +103,7 @@ data/                  # SQLite database file lives here once created
 - Database file lives at `./skillproof.db` (relative to repo root). Update `DATABASE_URL` in `app/config.py` if you relocate it.
 - CRUD helpers in `app/crud/crud_session.py` demonstrate how to read/write sessions.
 - `SessionLocal()` from `app/db/session.py` should be used with `try/finally` for connection cleanup.
+- Session `end_time` is captured when the websocket disconnects or a `session_end` event fires; drop the database to refresh schema when new columns are introduced.
 
 ## Extending the Platform
 
@@ -118,6 +129,11 @@ data/                  # SQLite database file lives here once created
 - Add persistence for per-event logs to power historical dashboards.
 - Build automated integrity heuristics (tab timing, copy/paste detection).
 - Deploy to a managed FastAPI hosting platform (Render/Fly.io) with managed SQLite or Postgres upgrade.
+
+## Data Files
+
+- `data/problems.json` – Master catalog for adaptive exercises; update difficulties, hints, and regression tests here.
+- `data/skillproof.db` – SQLite datastore (auto-generated). Delete this file if you change ORM models to let SQLAlchemy recreate the schema.
 
 ---
 

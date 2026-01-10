@@ -18,8 +18,7 @@ socket.onopen = function() {
 
 socket.onmessage = function(event) {
     try {
-        const rawData = event.data.replace(/'/g, '"').replace(/True/g, 'true').replace(/False/g, 'false');
-        const data = JSON.parse(rawData);
+        const data = JSON.parse(event.data);
         const userId = data.user_id;
 
         if (!userId) return;
@@ -35,10 +34,10 @@ socket.onmessage = function(event) {
         }
 
         const session = userSessions[userId];
-        session.lastEvent = data.type;
+        session.lastEvent = data.event;
         session.lastUpdate = new Date();
 
-        switch (data.type) {
+        switch (data.event) {
             case 'session_start':
                 session.status = 'Configuring';
                 break;
@@ -51,9 +50,7 @@ socket.onmessage = function(event) {
                 break;
             case 'code_submitted':
                 session.status = 'Evaluating';
-                // In a real scenario, you'd wait for the evaluation agent's result
-                // For this demo, we'll assume it's solved if the code doesn't have 'error'
-                if (data.result && data.result.analysis && !data.result.analysis.toLowerCase().includes('error')) {
+                if (data.evaluation && data.evaluation.status === 'passed') {
                     session.solved++;
                     session.status = 'Solved';
                 }
@@ -61,6 +58,13 @@ socket.onmessage = function(event) {
             case 'problem_assigned':
                 session.status = 'Active';
                 break;
+        }
+
+        if (data.integrity_decision === 'pause') {
+            session.status = 'Suspicious';
+        }
+        if (data.status === 'terminated') {
+            session.status = 'Terminated';
         }
 
         renderDashboard();

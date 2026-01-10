@@ -6,6 +6,7 @@ from .api.endpoints import sessions, admin
 from .websockets.connection_manager import manager
 from .websockets.handlers import handle_websocket_message
 from .db import session as db_session, base as db_base
+from .services.session_manager import session_manager
 
 db_base.Base.metadata.create_all(bind=db_session.engine)
 
@@ -42,4 +43,5 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
             await handle_websocket_message(websocket, data)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+        session_manager.close_session(client_id)
         await manager.broadcast(f"Client #{client_id} left the chat")

@@ -1,0 +1,61 @@
+[
+  {
+    "id": "recursion_factorial_fix",
+    "title": "Fix the Factorial Function",
+    "difficulty": "easy",
+    "topic": "recursion",
+    "description": "Repair the recursive factorial implementation so that it returns the correct result for non-negative integers.",
+    "starter_code": "def factorial(n):\n    if n == 0:\n        return 0\n    return n * factorial(n - 1)",
+    "entrypoint": "factorial",
+    "tests": [
+      {"args": [0], "expected": 1},
+      {"args": [1], "expected": 1},
+      {"args": [5], "expected": 120},
+      {"args": [7], "expected": 5040}
+    ],
+    "hints": {
+      "conceptual": "Factorial of n multiplies all positive integers up to n. How does the base case influence that definition?",
+      "directional": "Trace factorial(1). What should the recursion return at that step so multiplication works?",
+      "code": "Adjust the base case to return 1 for zero and make sure the recursive call uses n - 1." 
+    }
+  },
+  {
+    "id": "recursion_memoized_fibonacci",
+    "title": "Implement Memoized Fibonacci",
+    "difficulty": "medium",
+    "topic": "recursion",
+    "description": "Complete the memoized Fibonacci implementation so repeated calls reuse cached results.",
+    "starter_code": "def fibonacci(n, memo=None):\n    if memo is None:\n        memo = {}\n    if n <= 1:\n        return n\n    if n in memo:\n        return memo[n]\n    return fibonacci(n - 1) + fibonacci(n - 2)",
+    "entrypoint": "fibonacci",
+    "tests": [
+      {"args": [0], "expected": 0},
+      {"args": [1], "expected": 1},
+      {"args": [6], "expected": 8},
+      {"args": [10], "expected": 55}
+    ],
+    "hints": {
+      "conceptual": "Memoization stores solutions to subproblems. Where is that cache populated?",
+      "directional": "After computing fibonacci(n - 1) and fibonacci(n - 2), save the sum into memo before returning.",
+      "code": "Assign memo[n] = value before returning, and pass memo into the recursive calls." 
+    }
+  },
+  {
+    "id": "recursion_tower_of_hanoi",
+    "title": "Solve Tower of Hanoi",
+    "difficulty": "hard",
+    "topic": "recursion",
+    "description": "Return the list of moves to solve Tower of Hanoi for n discs using the classic three-peg strategy.",
+    "starter_code": "def tower_of_hanoi(n, source, auxiliary, destination):\n    moves = []\n    # Add your recursive solution here\n    return moves",
+    "entrypoint": "tower_of_hanoi",
+    "tests": [
+      {"args": [1, "A", "B", "C"], "expected": [["A", "C"]]},
+      {"args": [2, "A", "B", "C"], "expected": [["A", "B"], ["A", "C"], ["B", "C"]]},
+      {"args": [3, "A", "B", "C"], "expected": [["A", "C"], ["A", "B"], ["C", "B"], ["A", "C"], ["B", "A"], ["B", "C"], ["A", "C"]]}
+    ],
+    "hints": {
+      "conceptual": "To move n discs you move the top n-1 to the spare peg, move the largest disc, then move the n-1 stack on top.",
+      "directional": "Use recursion to move n-1 discs to auxiliary, append the largest move, then move the n-1 stack to destination.",
+      "code": "Extend the moves list with the recursive calls and append [source, destination] in between." 
+    }
+  }
+]

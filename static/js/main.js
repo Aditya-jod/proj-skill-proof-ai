@@ -21,15 +21,37 @@ socket.onmessage = function(event) {
         // Initialize the editor now that we have a problem
         initializeEditor(data.payload.code);
         problemTitle.textContent = `Problem: ${data.payload.title}`;
-        const difficulty = data.payload.difficulty;
-        sessionModeBadge.textContent = `${difficulty} Mode`;
-        sessionModeBadge.className = `badge rounded-pill fs-6 bg-${difficulty.toLowerCase() === 'easy' ? 'success' : difficulty.toLowerCase() === 'medium' ? 'warning' : 'danger'}`;
-        
+        const difficulty = data.payload.difficulty || 'easy';
+        const normalizedDifficulty = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+        sessionModeBadge.textContent = `${normalizedDifficulty} Mode`;
+        sessionModeBadge.className = `badge rounded-pill fs-6 bg-${difficulty === 'easy' ? 'success' : difficulty === 'medium' ? 'warning' : 'danger'}`;
+        if (data.payload.description) {
+            appendOutputMessage(`> ${data.payload.description}`, "system");
+        }
         appendOutputMessage(`> Problem "${data.payload.title}" loaded. Good luck!`, "system");
-    } else if (data.hint) {
-        appendOutputMessage(`Hint: ${data.hint}`, "hint");
-    } else if (data.integrity_action) {
-        appendOutputMessage(`Warning: ${data.integrity_action}`, "warning");
+    } else if (data.type === 'code_feedback') {
+        renderEvaluationFeedback(data);
+        if (data.next_problem) {
+            initializeEditor(data.next_problem.payload.code);
+            problemTitle.textContent = `Problem: ${data.next_problem.payload.title}`;
+            const diff = data.next_problem.payload.difficulty;
+            const nextDifficulty = diff.charAt(0).toUpperCase() + diff.slice(1);
+            sessionModeBadge.textContent = `${nextDifficulty} Mode`;
+            sessionModeBadge.className = `badge rounded-pill fs-6 bg-${diff === 'easy' ? 'success' : diff === 'medium' ? 'warning' : 'danger'}`;
+            appendOutputMessage(`> Difficulty ${data.next_problem.decision === 'advance' ? 'increased' : 'recalibrated'}. New problem assigned: ${data.next_problem.payload.title}`, "system");
+        }
+    } else if (data.type === 'hint') {
+        if (data.allowed && data.payload) {
+            appendOutputMessage(`Hint (${data.payload.level}): ${data.payload.text}`, "hint");
+        } else {
+            appendOutputMessage(`> Hint unavailable: ${data.message}`, "warning");
+        }
+    } else if (data.type === 'integrity') {
+        appendOutputMessage(`Integrity: ${data.message} (decision: ${data.decision})`, data.decision === 'terminate' ? 'error' : 'warning');
+    } else if (data.type === 'session_summary') {
+        appendOutputMessage(`> Session summary generated. Status: ${data.status}`, "system");
+    } else if (data.event) {
+        return;
     } else {
         // Generic message handler
         const message = data.result?.status || JSON.stringify(data);
@@ -60,6 +82,33 @@ function appendOutputMessage(text, type) {
     messageElement.className = `output-line ${type}`;
     output.appendChild(messageElement);
     output.scrollTop = output.scrollHeight;
+}
+
+function renderEvaluationFeedback(data) {
+    const evaluation = data.evaluation || {};
+    const diagnosis = data.diagnosis || {};
+    const submission = data.submission || {};
+
+    const statusText = evaluation.status ? evaluation.status.toUpperCase() : 'UNKNOWN';
+    const scoreText = typeof evaluation.score === 'number' ? `${evaluation.score}` : 'N/A';
+    appendOutputMessage(`> Evaluation ${statusText} | Score ${scoreText} | Passed ${evaluation.passed}/${evaluation.total_tests}`, "info");
+
+    if (evaluation.message) {
+        appendOutputMessage(`> ${evaluation.message}`, "info");
+    }
+
+    if (diagnosis.reasoning) {
+        const guess = typeof diagnosis.guess_probability === 'number' ? diagnosis.guess_probability.toFixed(2) : 'n/a';
+        appendOutputMessage(`> Reasoning: ${diagnosis.reasoning} (guess probability ${guess})`, "info");
+    }
+
+    if (submission.diff_ratio !== undefined) {
+        appendOutputMessage(`> Submission metrics: diff=${submission.diff_ratio}, delta=${submission.time_delta}s`, "info");
+    }
+
+    if (evaluation.penalties) {
+        appendOutputMessage(`> Penalties applied (hint: ${evaluation.penalties.hint}, time: ${evaluation.penalties.time}, integrity: ${evaluation.penalties.integrity})`, "info");
+    }
 }
 
 function sendMessage(type, payload) {
