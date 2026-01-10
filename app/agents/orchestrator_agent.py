@@ -1,42 +1,94 @@
-from .base_agent import BaseAgent
-from .learning_diagnosis_agent import LearningDiagnosisAgent
+from datetime import datetime
+from typing import Any, Dict, Optional
+
 from .adaptation_agent import AdaptationAgent
+from .evaluation_agent import EvaluationAgent
+from .hint_strategy_agent import HintStrategyAgent
 from .integrity_agent import IntegrityAgent
+from .learning_diagnosis_agent import LearningDiagnosisAgent
+from ..services.problem_repository import ProblemRepository
+from ..services.session_state import SessionState, SubmissionRecord
 
-# Central dispatcher that routes session events to the appropriate specialist agents.
 
-class OrchestratorAgent(BaseAgent):
-    """
-    The central brain of the system.
-    It receives events and decides which agent to delegate the task to.
-    """
-    def __init__(self):
-        # In a real app, these would be properly instantiated
+class OrchestratorAgent:
+    def __init__(self, state: SessionState, repository: Optional[ProblemRepository] = None) -> None:
+        self.state = state
+        self._repository = repository or ProblemRepository()
         self.learning_agent = LearningDiagnosisAgent()
-        self.adaptation_agent = AdaptationAgent()
+        self.adaptation_agent = AdaptationAgent(self._repository)
         self.integrity_agent = IntegrityAgent()
+        self.hint_agent = HintStrategyAgent()
+        self.evaluation_agent = EvaluationAgent()
 
-    def execute(self, data: dict) -> dict:
-        event_type = data.get("type")
-        payload = data.get("payload")
-        user_id = data.get("user_id")
+    def handle_event(self, event_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        if event_type not in {"focus_lost", "focus_gained", "webcam_alert"}:
+            self.state.integrity.advance(datetime.utcnow())
 
-        print(f"Orchestrator: Received event '{event_type}' from {user_id}")
+        if event_type == "session_start":
+            self.state.mode = payload.get("mode", self.state.mode)
+            response = self.adaptation_agent.execute(self.state, payload)
+            response.setdefault("meta", {})["skill_profile"] = self.state.skill_profile.as_dict()
+            return response
 
-        if event_type == 'session_start':
-            problem_data = self.adaptation_agent.execute(payload)
-            return {
-                "action": "assign_problem",
-                "data": {
-                    "type": "problem_assigned",
-                    "payload": problem_data
-                }
+        if event_type == "code_submitted":
+            evaluation_bundle = self.evaluation_agent.execute(self.state, payload)
+            submission = self.state.latest_submission()
+            learning = self.learning_agent.execute(
+                self.state,
+                payload,
+                {"submission": submission, "evaluation": evaluation_bundle["result"]},
+            ) if submission else {"type": "learning_diagnosis", "message": "No submission"}
+            adaptation_update = self.adaptation_agent.after_submission(self.state, evaluation_bundle["result"])
+
+            response: Dict[str, Any] = {
+                "type": "code_feedback",
+                "evaluation": evaluation_bundle["result"],
+                "submission": evaluation_bundle["submission_metrics"],
+                "diagnosis": learning,
+                "skill_profile": self.state.skill_profile.as_dict(),
+                "integrity": self.state.integrity.as_dict(),
+                "status": self.state.status,
             }
-        
-        elif event_type == 'code_submitted':
-            return self.learning_agent.execute(payload)
+            if adaptation_update.get("new_problem"):
+                response["next_problem"] = {
+                    "decision": adaptation_update.get("decision"),
+                    "payload": adaptation_update["new_problem"],
+                }
+            return response
 
-        elif event_type == 'focus_lost':
-            return self.integrity_agent.execute(payload)
+        if event_type == "hint_requested":
+            hint = self.hint_agent.execute(self.state, payload)
+            hint["skill_profile"] = self.state.skill_profile.as_dict()
+            return hint
 
-        return {"status": "acknowledged", "event": event_type}
+        if event_type in {"focus_lost", "focus_gained", "webcam_alert"}:
+            return self.integrity_agent.execute(self.state, {"event": event_type, **payload})
+
+        if event_type == "session_end":
+            return self._session_summary()
+
+        return {"type": "ack", "message": f"Unhandled event: {event_type}"}
+
+    def _session_summary(self) -> Dict[str, Any]:
+        submissions = [self._describe_submission(record) for record in self.state.submissions]
+        return {
+            "type": "session_summary",
+            "status": self.state.status,
+            "skill_profile": self.state.skill_profile.as_dict(),
+            "integrity": self.state.integrity.as_dict(),
+            "submissions": submissions,
+            "hints": [
+                {"level": hint.level, "timestamp": hint.created_at.isoformat()} for hint in self.state.hints
+            ],
+        }
+
+    def _describe_submission(self, record: SubmissionRecord) -> Dict[str, Any]:
+        return {
+            "timestamp": record.created_at.isoformat(),
+            "status": record.status,
+            "tests_passed": record.tests_passed,
+            "tests_failed": record.tests_failed,
+            "diff_ratio": round(record.diff_ratio, 3),
+            "guess_probability": round(record.guess_probability, 3),
+            "reasoning_label": record.reasoning_label,
+        }
