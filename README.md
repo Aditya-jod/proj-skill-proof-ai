@@ -7,7 +7,7 @@ SkillProof AI is a prototype agentic platform for technical assessments. Instead
 - **Agent Orchestration** – `OrchestratorAgent` now routes events through dedicated handlers, dispatching cleanly to adaptation, learning diagnosis, evaluation, integrity, and hint specialists.
 - **Adaptive Problems** – `AdaptationAgent` selects starter code based on difficulty/topic chosen during session setup.
 - **Live Session Monitoring** – Admin dashboard streams focus events, submissions, and status changes via WebSockets.
-- **Groq-Powered Intelligence** – `AIService` integrates the Groq `llama3-8b-8192` model for code analysis and hint generation.
+- **Gemini-Powered Intelligence** – `AIService` integrates Google AI Studio (Gemini 1.5 Pro) for analysis and adaptive hinting.
 - **Integrity Enforcement** – `IntegrityAgent` reacts to tab switches or other suspicious signals and pushes warnings.
 - **SQLite Persistence** – Session metadata is stored via SQLAlchemy against `sqlite:///./skillproof.db`.
 - **Evidence-Based Scoring** – `EvaluationAgent` executes reference tests from the problem bank and applies penalties for hints, delay, and integrity states.
@@ -42,7 +42,7 @@ app/
   db/                  # Engine/session setup and Base declaration
   models/              # ORM models (e.g., Session)
   schemas/             # Pydantic schemas for payload validation
-  services/            # Shared services (Groq AI, session manager)
+    services/            # Shared services (Gemini AI client, session manager)
   websockets/          # Connection manager and message router
 static/                # Frontend assets (landing page, session UI, dashboard)
 templates/             # Server-rendered HTML entry points
@@ -64,7 +64,7 @@ data/                  # SQLite database file lives here once created
 ## Prerequisites
 
 - Python 3.12+
-- A Groq API key (free tier available at [console.groq.com/keys](https://console.groq.com/keys)).
+- A Google AI Studio API key (create one at [ai.google.dev](https://ai.google.dev/)).
 
 ## Setup & Execution
 
@@ -83,9 +83,9 @@ data/                  # SQLite database file lives here once created
     ```
 
 3. **Configure environment**
-    Create `.env` (already gitignored) and place your Groq key:
+    Create `.env` (already gitignored) and add your Google AI Studio key:
     ```env
-    GROQ_API_KEY="gsk_your_actual_key"
+    GOOGLE_API_KEY="AIza_sy_your_actual_key"
     ```
 
 4. **Seed challenge catalog**
@@ -112,7 +112,7 @@ data/                  # SQLite database file lives here once created
 
 1. **User configures session** – Difficulty/topic selection from landing page; WebSocket connection established.
 2. **Orchestrator handles events** – On `session_start` it calls `AdaptationAgent` to assign starter code.
-3. **Submissions analyzed** – `LearningDiagnosisAgent` passes code to `AIService`, which queries Groq for analysis/hints.
+3. **Submissions analyzed** – `LearningDiagnosisAgent` and `HintStrategyAgent` call `AIService`, which queries Google Gemini for diagnostics and adaptive hints.
 4. **Integrity monitoring** – Focus loss or suspicious events trigger `IntegrityAgent` actions broadcast to dashboard.
 5. **Admin visibility** – Dashboard consumes broadcasted payloads to present status, flags, and timestamps live.
 
@@ -137,13 +137,13 @@ data/                  # SQLite database file lives here once created
 
 ## Troubleshooting
 
-- **`GROQ_API_KEY missing`**: ensure `.env` is populated and shell reloaded.
+- **`GOOGLE_API_KEY missing`**: ensure `.env` is populated and shell reloaded.
 - **WebSocket closes immediately**: check server logs for stack traces (missing imports, collectors).
 - **Static assets 404**: confirm app started via `uvicorn app.main:app --reload` so templates/static routes resolve.
 
 ## Roadmap
 
-- Integrate additional Groq models for code execution feedback.
+- Deepen Gemini usage for richer code execution feedback.
 - Add persistence for per-event logs to power historical dashboards.
 - Build automated integrity heuristics (tab timing, copy/paste detection).
 - Deploy to a managed FastAPI hosting platform (Render/Fly.io) with managed SQLite or Postgres upgrade.
