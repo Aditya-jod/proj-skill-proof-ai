@@ -6,6 +6,7 @@ from .api.endpoints import sessions, admin
 from .websockets.connection_manager import manager
 from .websockets.handlers import handle_websocket_message
 from .db import session as db_session, base as db_base
+from . import models  # noqa: F401  # Ensure SQLAlchemy models are registered
 from .services.session_manager import session_manager
 
 db_base.Base.metadata.create_all(bind=db_session.engine)
