@@ -21,6 +21,8 @@ async def handle_websocket_message(websocket: WebSocket, data: dict) -> None:
     orchestrator = bundle["agent"]
     result = orchestrator.handle_event(event_type, payload)
 
+    session_manager.record_feedback(bundle["state"])
+
     await websocket.send_json(result)
 
     if event_type == "session_end":
@@ -36,6 +38,12 @@ async def handle_websocket_message(websocket: WebSocket, data: dict) -> None:
         "skill_profile": state.skill_profile.as_dict(),
     }
 
+    if result.get("decision_log"):
+        broadcast_payload["decision_log"] = result["decision_log"]
+
+    if result.get("feedback"):
+        broadcast_payload["feedback"] = result["feedback"]
+
     if result.get("type") == "code_feedback":
         evaluation = result.get("evaluation", {})
         broadcast_payload["evaluation"] = {
@@ -46,6 +54,8 @@ async def handle_websocket_message(websocket: WebSocket, data: dict) -> None:
         diagnosis = result.get("diagnosis", {})
         broadcast_payload["reasoning"] = diagnosis.get("reasoning")
         broadcast_payload["guess_probability"] = diagnosis.get("guess_probability")
+        if result.get("submission"):
+            broadcast_payload["submission"] = result["submission"]
     elif result.get("type") == "integrity":
         broadcast_payload["integrity_decision"] = result.get("decision")
     elif result.get("type") == "hint":

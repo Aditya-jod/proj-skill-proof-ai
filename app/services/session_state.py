@@ -56,6 +56,8 @@ class IntegrityState:
     focus_losses: int = 0
     inactivity_flags: int = 0
     webcam_flags: int = 0
+    tab_switches: int = 0
+    webcam_risk: float = 0.0
     severity: str = "normal"
     paused: bool = False
     terminated: bool = False
@@ -99,6 +101,7 @@ class IntegrityState:
         if not flagged:
             return "ok"
         self.webcam_flags += 1
+        self.webcam_risk = min(1.0, self.webcam_risk + 0.25)
         if self.webcam_flags >= 2:
             self.severity = "warn"
         if self.webcam_flags >= 3:
@@ -107,11 +110,24 @@ class IntegrityState:
             return "pause"
         return "warn"
 
+    def register_tab_switch(self) -> str:
+        self.tab_switches += 1
+        if self.tab_switches >= 4:
+            self.severity = "terminated"
+            self.terminated = True
+            self.paused = False
+            return "terminate"
+        if self.tab_switches >= 2:
+            self.severity = "warn"
+        return "warn"
+
     def as_dict(self) -> Dict[str, Any]:
         return {
             "focus_losses": self.focus_losses,
             "inactivity_flags": self.inactivity_flags,
             "webcam_flags": self.webcam_flags,
+            "tab_switches": self.tab_switches,
+            "webcam_risk": round(self.webcam_risk, 3),
             "severity": self.severity,
             "paused": self.paused,
             "terminated": self.terminated,
@@ -120,28 +136,67 @@ class IntegrityState:
 
 @dataclass
 class SkillProfile:
-    conceptual: float = 0.5
-    implementation: float = 0.5
-    reasoning: float = 0.5
-    guessing: float = 0.0
+    debugging: float = 0.5
+    logic: float = 0.5
+    syntax: float = 0.5
+    problem_decomposition: float = 0.5
+    integrity_confidence: float = 0.5
     attempts: int = 0
+    dirty: bool = False
 
     def _clamp(self, value: float) -> float:
         return max(0.0, min(1.0, value))
 
-    def apply(self, conceptual_delta: float, implementation_delta: float, reasoning_delta: float, guessing_delta: float) -> None:
-        self.conceptual = self._clamp(self.conceptual + conceptual_delta)
-        self.implementation = self._clamp(self.implementation + implementation_delta)
-        self.reasoning = self._clamp(self.reasoning + reasoning_delta)
-        self.guessing = self._clamp(self.guessing + guessing_delta)
+    def apply(
+        self,
+        *,
+        debugging: float = 0.0,
+        logic: float = 0.0,
+        syntax: float = 0.0,
+        problem_decomposition: float = 0.0,
+        integrity_confidence: float = 0.0,
+    ) -> None:
+        self.debugging = self._clamp(self.debugging + debugging)
+        self.logic = self._clamp(self.logic + logic)
+        self.syntax = self._clamp(self.syntax + syntax)
+        self.problem_decomposition = self._clamp(self.problem_decomposition + problem_decomposition)
+        self.integrity_confidence = self._clamp(self.integrity_confidence + integrity_confidence)
         self.attempts += 1
+        self.dirty = True
 
     def as_dict(self) -> Dict[str, Any]:
         return {
-            "conceptual": round(self.conceptual, 3),
-            "implementation": round(self.implementation, 3),
-            "reasoning": round(self.reasoning, 3),
-            "guessing": round(self.guessing, 3),
+            "debugging": round(self.debugging, 3),
+            "logic": round(self.logic, 3),
+            "syntax": round(self.syntax, 3),
+            "problem_decomposition": round(self.problem_decomposition, 3),
+            "integrity_confidence": round(self.integrity_confidence, 3),
+            "attempts": self.attempts,
+        }
+
+    def mark_clean(self) -> None:
+        self.dirty = False
+
+    @classmethod
+    def from_persistent(cls, payload: Dict[str, Any]) -> "SkillProfile":
+        instance = cls(
+            debugging=payload.get("debugging", 0.5),
+            logic=payload.get("logic", 0.5),
+            syntax=payload.get("syntax", 0.5),
+            problem_decomposition=payload.get("problem_decomposition", 0.5),
+            integrity_confidence=payload.get("integrity_confidence", 0.5),
+            attempts=payload.get("attempts", 0),
+        )
+        instance.dirty = False
+        return instance
+
+    def for_update(self) -> Dict[str, Any]:
+        return {
+            "debugging": self.debugging,
+            "logic": self.logic,
+            "syntax": self.syntax,
+            "problem_decomposition": self.problem_decomposition,
+            "integrity_confidence": self.integrity_confidence,
             "attempts": self.attempts,
         }
 
@@ -161,6 +216,9 @@ class SessionState:
     integrity: IntegrityState = field(default_factory=IntegrityState)
     skill_profile: SkillProfile = field(default_factory=SkillProfile)
     difficulty_history: List[str] = field(default_factory=list)
+    decision_history: List[Dict[str, Any]] = field(default_factory=list)
+    agent_feedback: Dict[str, List[str]] = field(default_factory=dict)
+    feedback_events: List[Dict[str, Any]] = field(default_factory=list)
 
     def mark_problem(self, problem: ProblemSpec) -> None:
         self.current_problem = problem
@@ -195,6 +253,19 @@ class SessionState:
 
     def record_hint(self, level: str, text: str) -> None:
         self.hints.append(HintRecord(level=level, text=text, created_at=datetime.utcnow()))
+
+    def record_decision(self, agent: str, decision: Dict[str, Any]) -> None:
+        entry = {
+            "agent": agent,
+            "decision": decision,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+        self.decision_history.append(entry)
+
+    def append_feedback(self, agent: str, note: str) -> None:
+        timestamp = datetime.utcnow().isoformat()
+        self.agent_feedback.setdefault(agent, []).append(note)
+        self.feedback_events.append({"agent": agent, "note": note, "timestamp": timestamp})
 
     def latest_submission(self) -> Optional[SubmissionRecord]:
         if not self.submissions:

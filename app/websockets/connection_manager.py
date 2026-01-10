@@ -13,7 +13,6 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
 
     async def broadcast(self, message: str):
-        # In a real app, you'd likely have separate channels for admins
         for connection in self.active_connections:
             try:
                 await connection.send_text(message)
