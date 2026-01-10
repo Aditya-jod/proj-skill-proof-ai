@@ -4,7 +4,7 @@ SkillProof AI is a prototype agentic platform for technical assessments. Instead
 
 ## Feature Highlights
 
-- **Agent Orchestration** – `OrchestratorAgent` receives every event and dispatches to specialists (adaptation, learning diagnosis, integrity).
+- **Agent Orchestration** – `OrchestratorAgent` now routes events through dedicated handlers, dispatching cleanly to adaptation, learning diagnosis, evaluation, integrity, and hint specialists.
 - **Adaptive Problems** – `AdaptationAgent` selects starter code based on difficulty/topic chosen during session setup.
 - **Live Session Monitoring** – Admin dashboard streams focus events, submissions, and status changes via WebSockets.
 - **Groq-Powered Intelligence** – `AIService` integrates the Groq `llama3-8b-8192` model for code analysis and hint generation.
@@ -21,6 +21,7 @@ SkillProof AI is a prototype agentic platform for technical assessments. Instead
 - **Persistent Skill Intelligence** – `SkillProfile` objects track debugging, logic, syntax, decomposition, and integrity confidence scores. Adjustments are marked dirty and persisted to the new `skill_profiles` table at session close, allowing longitudinal growth across attempts.
 - **Feedback Ledger** – Agent explanations and governance notes append to `agent_feedback`. Entries flush to the `agent_feedback` table (linked to `sessions.id`) and surface in both the candidate IDE and admin dashboard.
 - **Decision Log Surface** – WebSocket payloads now include rolling decision history, most recent submission metrics, and agent feedback so UIs can render transparency panels without additional queries.
+- **WebSocket Message Pipeline** – Session retrieval and broadcast payload construction live in dedicated helpers, leaving the main socket handler focused on orchestration and error reporting.
 
 ## Governance & Policies
 
@@ -29,7 +30,7 @@ SkillProof AI is a prototype agentic platform for technical assessments. Instead
 - **Adaptive Progression** – `AdaptationAgent` promotes to harder problems after passes, remediates after repeated failures, and pauses the session if no suitable challenge is found (triggering administrator review).
 - **Evaluation Scoring** – `EvaluationAgent` records penalties for hint usage, elapsed time, and integrity severity; only fully passing submissions with sufficient score mark test mode sessions as completed.
 - **Decision Explainability** – Each agent returns structured explanations that the orchestrator logs and the UI displays. This forms the basis for compliance/audit trails and ensures users receive rationale for automated actions.
-- **Resilient Error Handling** – Custom `SkillProofError` hierarchy feeds centralized logging, FastAPI exception hooks, and WebSocket safeguards. Agents fail gracefully with `agent_error` payloads, while the orchestrator and session manager persist diagnostic feedback for administrators.
+- **Resilient Error Handling** – Custom `SkillProofError` hierarchy feeds centralized logging, FastAPI exception hooks, and WebSocket safeguards. Agents fail gracefully with `agent_error` payloads, the orchestrator records structured failures, and WebSocket helpers broadcast trimmed diagnostics for administrators.
 
 ## Repository Layout
 
