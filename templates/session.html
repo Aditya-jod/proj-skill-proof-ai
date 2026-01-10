@@ -88,6 +88,30 @@
                 &gt; System ready. Waiting for session to start...
             </div>
         </div>
+
+        <div class="row mt-4 g-3" id="insights-panels">
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white border-0">
+                        <h6 class="mb-0 text-muted">Decision Trail</h6>
+                    </div>
+                    <div class="card-body pt-2">
+                        <ul id="decision-log" class="panel-list list-unstyled mb-0"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white border-0">
+                        <h6 class="mb-0 text-muted">Agent Feedback</h6>
+                    </div>
+                    <div class="card-body pt-2">
+                        <div id="agent-explanation" class="explanation-banner text-muted mb-3">Awaiting agent decisions...</div>
+                        <ul id="agent-feedback" class="panel-list list-unstyled mb-0"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- CodeMirror JS -->
