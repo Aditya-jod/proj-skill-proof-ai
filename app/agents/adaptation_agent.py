@@ -6,6 +6,11 @@ from ..core.decision import AgentDecision
 from ..services.problem_repository import ProblemRepository
 from ..services.session_state import ProblemSpec, SessionState
 
+PROMOTION_PASS_REQUIREMENTS = {
+    "easy": 3,
+    "medium": 4,
+}
+
 
 class AdaptationAgent(BaseAgent):
     def __init__(self, repository: Optional[ProblemRepository] = None) -> None:
@@ -27,7 +32,14 @@ class AdaptationAgent(BaseAgent):
     def decide(self, state: SessionState) -> AgentDecision:
         requested_difficulty = self._request.get("difficulty", state.difficulty)
         topic = self._request.get("topic", state.topic)
-        problem = self._repository.find(topic, requested_difficulty) or self._repository.fallback(topic, requested_difficulty)
+        exclude_ids = set(state.assigned_problem_ids)
+        if state.current_problem:
+            exclude_ids.add(state.current_problem.id)
+        problem = self._repository.find(topic, requested_difficulty, exclude_ids=exclude_ids) or self._repository.fallback(
+            topic,
+            requested_difficulty,
+            exclude_ids=exclude_ids,
+        )
         self._candidate = problem
         if not problem:
             return AgentDecision(
@@ -78,10 +90,15 @@ class AdaptationAgent(BaseAgent):
             return {}
 
         decision = None
+        next_problem: Optional[ProblemSpec] = None
         if evaluation.get("status") == "passed":
             next_problem = self._promote_problem(state)
             if next_problem:
                 decision = "advance"
+            else:
+                next_problem = self._refresh_problem(state)
+                if next_problem:
+                    decision = "reinforce"
         else:
             failures = self._recent_failures(state)
             if failures >= 3:
@@ -91,11 +108,15 @@ class AdaptationAgent(BaseAgent):
             else:
                 next_problem = None
 
-        if decision and state.current_problem:
+        if decision and state.current_problem and next_problem:
             return {"decision": decision, "new_problem": state.current_problem.for_delivery()}
         return {}
 
     def _promote_problem(self, state: SessionState) -> Optional[ProblemSpec]:
+        required_passes = PROMOTION_PASS_REQUIREMENTS.get(state.difficulty, 3)
+        if state.consecutive_passes() < required_passes:
+            return None
+
         ladder = ["easy", "medium", "hard"]
         try:
             idx = ladder.index(state.difficulty)
@@ -104,7 +125,14 @@ class AdaptationAgent(BaseAgent):
         if idx >= len(ladder) - 1:
             return None
         target_diff = ladder[idx + 1]
-        candidate = self._repository.find(state.topic, target_diff)
+        exclude_ids = set(state.assigned_problem_ids)
+        if state.current_problem:
+            exclude_ids.add(state.current_problem.id)
+        candidate = self._repository.find(state.topic, target_diff, exclude_ids=exclude_ids) or self._repository.fallback(
+            state.topic,
+            target_diff,
+            exclude_ids=exclude_ids,
+        )
         if not candidate:
             return None
         state.mark_problem(candidate)
@@ -119,12 +147,39 @@ class AdaptationAgent(BaseAgent):
         if idx == 0:
             return None
         target_diff = ladder[idx - 1]
-        candidate = self._repository.find(state.topic, target_diff)
-        if not candidate or state.current_problem and candidate.id == state.current_problem.id:
+        exclude_ids = set(state.assigned_problem_ids)
+        if state.current_problem:
+            exclude_ids.add(state.current_problem.id)
+        candidate = self._repository.find(state.topic, target_diff, exclude_ids=exclude_ids) or self._repository.fallback(
+            state.topic,
+            target_diff,
+            exclude_ids=exclude_ids,
+        )
+        if not candidate:
             return None
         state.mark_problem(candidate)
         return candidate
 
     def _recent_failures(self, state: SessionState) -> int:
-        recent = state.submissions[-3:]
-        return sum(1 for record in recent if record.status != "passed")
+        current_difficulty = state.difficulty
+        count = 0
+        inspected = 0
+        for record in reversed(state.submissions):
+            if record.difficulty != current_difficulty:
+                continue
+            inspected += 1
+            if record.status != "passed":
+                count += 1
+            if inspected >= 3:
+                break
+        return count
+
+    def _refresh_problem(self, state: SessionState) -> Optional[ProblemSpec]:
+        exclude_ids = set(state.assigned_problem_ids)
+        if state.current_problem:
+            exclude_ids.add(state.current_problem.id)
+        candidate = self._repository.find(state.topic, state.difficulty, exclude_ids=exclude_ids)
+        if not candidate:
+            return None
+        state.mark_problem(candidate)
+        return candidate

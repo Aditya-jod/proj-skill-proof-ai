@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 
 from .base_agent import BaseAgent
 from ..core.decision import AgentDecision
+from ..services.ai_service import ai_service
 from ..services.session_state import SessionState
 
 
@@ -131,6 +132,44 @@ class HintStrategyAgent(BaseAgent):
                 if candidate in hints and candidate not in used:
                     level = candidate
                     break
-        if level not in hints:
-            return None, None
-        return level, hints[level]
+        fallback_hint = hints.get(level)
+        ai_hint = self._generate_ai_hint(state, level, fallback_hint)
+        if ai_hint:
+            return level, ai_hint
+        if fallback_hint:
+            return level, fallback_hint
+        return None, None
+
+    def _generate_ai_hint(self, state: SessionState, level: str, fallback: Optional[str]) -> Optional[str]:
+        if not state.current_problem:
+            return fallback
+
+        latest = state.latest_submission()
+        evaluation_summary = ""
+        if latest:
+            evaluation_summary = (
+                f"Last submission status: {latest.status}. Tests passed: {latest.tests_passed}/{latest.total_tests}. "
+                f"Reasoning label: {latest.reasoning_label}."
+            )
+
+        context = {
+            "level": level,
+            "problem": {
+                "title": state.current_problem.title,
+                "description": state.current_problem.description,
+                "difficulty": state.current_problem.difficulty,
+                "topic": state.current_problem.topic,
+            },
+            "code": latest.code if latest else None,
+            "evaluation_summary": evaluation_summary,
+            "fallback_hint": fallback,
+        }
+
+        try:
+            hint = ai_service.generate_hint(context).strip()
+        except Exception:  # pragma: no cover - network/service errors
+            hint = ""
+
+        if hint:
+            return hint
+        return fallback

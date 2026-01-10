@@ -150,4 +150,5 @@ class OrchestratorAgent:
             "diff_ratio": round(record.diff_ratio, 3),
             "guess_probability": round(record.guess_probability, 3),
             "reasoning_label": record.reasoning_label,
+            "difficulty": record.difficulty,
         }
