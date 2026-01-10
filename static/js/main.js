@@ -7,6 +7,9 @@ const setupContainer = document.getElementById('setup-container');
 const codingContainer = document.getElementById('coding-container');
 const problemTitle = document.getElementById('problem-title');
 const sessionModeBadge = document.getElementById('session-mode-badge');
+const decisionLog = document.getElementById('decision-log');
+const feedbackPanel = document.getElementById('agent-feedback');
+const explanationPanel = document.getElementById('agent-explanation');
 
 let editor; // Will be initialized after session start
 
@@ -57,6 +60,18 @@ socket.onmessage = function(event) {
         const message = data.result?.status || JSON.stringify(data);
         appendOutputMessage(`> ${message}`, "info");
     }
+
+    if (data.explanation) {
+        renderExplanation(data.explanation);
+    }
+
+    if (data.decision_log) {
+        renderDecisionTrail(data.decision_log);
+    }
+
+    if (data.feedback) {
+        renderAgentFeedback(data.feedback);
+    }
 };
 
 socket.onclose = function() {
@@ -91,7 +106,9 @@ function renderEvaluationFeedback(data) {
 
     const statusText = evaluation.status ? evaluation.status.toUpperCase() : 'UNKNOWN';
     const scoreText = typeof evaluation.score === 'number' ? `${evaluation.score}` : 'N/A';
-    appendOutputMessage(`> Evaluation ${statusText} | Score ${scoreText} | Passed ${evaluation.passed}/${evaluation.total_tests}`, "info");
+    const passed = typeof evaluation.passed === 'number' ? evaluation.passed : 0;
+    const total = typeof evaluation.total_tests === 'number' ? evaluation.total_tests : (passed + (evaluation.failed || 0));
+    appendOutputMessage(`> Evaluation ${statusText} | Score ${scoreText} | Passed ${passed}/${total || 'n/a'}`, "info");
 
     if (evaluation.message) {
         appendOutputMessage(`> ${evaluation.message}`, "info");
@@ -109,6 +126,72 @@ function renderEvaluationFeedback(data) {
     if (evaluation.penalties) {
         appendOutputMessage(`> Penalties applied (hint: ${evaluation.penalties.hint}, time: ${evaluation.penalties.time}, integrity: ${evaluation.penalties.integrity})`, "info");
     }
+}
+
+function renderDecisionTrail(entries) {
+    if (!decisionLog || !Array.isArray(entries)) {
+        return;
+    }
+    decisionLog.innerHTML = '';
+    const recent = entries.slice(-6).reverse();
+    recent.forEach((entry) => {
+        const item = document.createElement('li');
+        item.className = 'panel-item';
+        const agent = entry.agent || 'agent';
+        const decision = entry.decision?.decision_type || entry.decision?.type || 'action';
+        const timestamp = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : '';
+        item.innerHTML = `<span class="badge bg-secondary me-2">${agent}</span><span class="text-light">${decision}</span><span class="ms-auto text-muted small">${timestamp}</span>`;
+        decisionLog.appendChild(item);
+    });
+    if (!recent.length) {
+        const empty = document.createElement('li');
+        empty.className = 'panel-item text-muted';
+        empty.textContent = 'No decisions recorded yet.';
+        decisionLog.appendChild(empty);
+    }
+}
+
+function renderAgentFeedback(feedbackMap) {
+    if (!feedbackPanel || !feedbackMap) {
+        return;
+    }
+    feedbackPanel.innerHTML = '';
+    const entries = Object.entries(feedbackMap)
+        .map(([agent, notes]) => ({ agent, note: Array.isArray(notes) ? notes[notes.length - 1] : undefined }))
+        .filter((entry) => entry.note);
+
+    entries.forEach(({ agent, note }) => {
+        const item = document.createElement('li');
+        item.className = 'panel-item';
+        item.innerHTML = `<span class="badge bg-info text-dark me-2">${agent}</span><span class="text-light">${note}</span>`;
+        feedbackPanel.appendChild(item);
+    });
+
+    if (!entries.length) {
+        const empty = document.createElement('li');
+        empty.className = 'panel-item text-muted';
+        empty.textContent = 'Awaiting agent feedback.';
+        feedbackPanel.appendChild(empty);
+    }
+}
+
+function renderExplanation(explanation) {
+    if (!explanationPanel) {
+        return;
+    }
+    if (!explanation) {
+        explanationPanel.textContent = 'Awaiting agent decisions...';
+        return;
+    }
+    if (typeof explanation === 'string') {
+        explanationPanel.textContent = explanation;
+        return;
+    }
+    const agent = explanation.agent ? `[${explanation.agent}]` : '';
+    const decision = explanation.decision ? `${explanation.decision}` : '';
+    const message = explanation.message || explanation.rationale || '';
+    const detail = explanation.metadata ? JSON.stringify(explanation.metadata) : '';
+    explanationPanel.textContent = [agent, decision, message, detail].filter(Boolean).join(' ');
 }
 
 function sendMessage(type, payload) {

@@ -28,6 +28,8 @@ socket.onmessage = function(event) {
                 status: 'Configuring',
                 lastEvent: 'Session Started',
                 integrityFlags: 0,
+                lastDecision: 'none',
+                lastFeedback: 'none',
                 lastUpdate: new Date(),
                 solved: 0
             };
@@ -36,6 +38,23 @@ socket.onmessage = function(event) {
         const session = userSessions[userId];
         session.lastEvent = data.event;
         session.lastUpdate = new Date();
+
+        if (data.decision_log && Array.isArray(data.decision_log) && data.decision_log.length) {
+            const lastDecisionEntry = data.decision_log[data.decision_log.length - 1];
+            const agent = lastDecisionEntry.agent || 'agent';
+            const decisionType = lastDecisionEntry.decision?.decision_type || 'decision';
+            session.lastDecision = `${agent}: ${decisionType}`;
+        }
+
+        if (data.feedback) {
+            const entries = Object.entries(data.feedback)
+                .map(([agent, notes]) => ({ agent, note: Array.isArray(notes) ? notes[notes.length - 1] : undefined }))
+                .filter((entry) => entry.note);
+            if (entries.length) {
+                const recent = entries[entries.length - 1];
+                session.lastFeedback = `${recent.agent}: ${recent.note}`;
+            }
+        }
 
         switch (data.event) {
             case 'session_start':
@@ -109,6 +128,8 @@ function renderDashboard() {
             <td>${userId}</td>
             <td><i class="bi ${statusIcon} ${statusClass} status-icon me-2"></i>${session.status}</td>
             <td>${session.lastEvent}</td>
+            <td class="text-truncate" style="max-width: 180px;" title="${session.lastDecision}">${session.lastDecision}</td>
+            <td class="text-truncate" style="max-width: 200px;" title="${session.lastFeedback}">${session.lastFeedback}</td>
             <td><span class="badge rounded-pill ${flagClass}">${session.integrityFlags}</span></td>
             <td>${session.lastUpdate.toLocaleTimeString()}</td>
         `;
