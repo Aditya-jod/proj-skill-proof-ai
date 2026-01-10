@@ -6,4 +6,4 @@ pydantic-settings
 python-dotenv
 websockets
 jinja2
-groq
+google-generativeai
