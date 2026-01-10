@@ -7,19 +7,27 @@ from typing import Any, Dict, Optional
 
 @dataclass
 class AgentDecision:
-    decision: str
+    agent: str
+    decision_type: str
     confidence: float
-    next_action: Optional[str] = None
-    reason: str = ""
+    rationale: str = ""
     policy: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
+    next_action: Optional[str] = None
     created_at: datetime = field(default_factory=datetime.utcnow)
+
+    @property
+    def decision(self) -> str:
+        """Backward-compatible alias used by existing logging."""
+        return self.decision_type
 
     def as_payload(self) -> Dict[str, Any]:
         payload = {
-            "decision": self.decision,
+            "agent": self.agent,
+            "decision_type": self.decision_type,
+            "decision": self.decision_type,
             "confidence": self.confidence,
-            "reason": self.reason,
+            "rationale": self.rationale,
             "timestamp": self.created_at.isoformat(),
         }
         if self.next_action:
