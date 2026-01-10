@@ -14,6 +14,22 @@ SkillProof AI is a prototype agentic platform for technical assessments. Instead
 - **Reasoning Diagnostics** – `LearningDiagnosisAgent` tracks code deltas, attempt cadence, and outcomes to classify guessing vs. mastery and maintain a skill profile.
 - **Guarded Hinting** – `HintStrategyAgent` throttles hint frequency, escalates through conceptual→directional→code granularity, and blocks when limit reached.
 
+## Autonomous Architecture
+
+- **Decision Lifecycle** – Every concrete agent now follows an `observe → decide → act → explain` loop defined in `BaseAgent`. The orchestrator captures each `AgentDecision`, storing rationale, policy, and metadata inside the session state for auditing.
+- **Message Bus Telemetry** – `MessageBus` provides lightweight publish/subscribe transport. The orchestrator emits inbound events and agent decisions so future agents or analytics subscribers can react without tight coupling.
+- **Persistent Skill Intelligence** – `SkillProfile` objects track debugging, logic, syntax, decomposition, and integrity confidence scores. Adjustments are marked dirty and persisted to the new `skill_profiles` table at session close, allowing longitudinal growth across attempts.
+- **Feedback Ledger** – Agent explanations and governance notes append to `agent_feedback`. Entries flush to the `agent_feedback` table (linked to `sessions.id`) and surface in both the candidate IDE and admin dashboard.
+- **Decision Log Surface** – WebSocket payloads now include rolling decision history, most recent submission metrics, and agent feedback so UIs can render transparency panels without additional queries.
+
+## Governance & Policies
+
+- **Hint Controls** – `HintStrategyAgent` enforces a three-hint ceiling, 45-second cooldown between hints, and escalates through conceptual/directional/code tiers before repeating, blocking if inventory is exhausted.
+- **Integrity Escalation** – `IntegrityAgent` converts focus losses, inactivity, webcam alerts, and tab switches into a policy ladder: warn → pause → terminate. Severity updates set `SessionState.status`, which drives frontend messaging and dashboard flags.
+- **Adaptive Progression** – `AdaptationAgent` promotes to harder problems after passes, remediates after repeated failures, and pauses the session if no suitable challenge is found (triggering administrator review).
+- **Evaluation Scoring** – `EvaluationAgent` records penalties for hint usage, elapsed time, and integrity severity; only fully passing submissions with sufficient score mark test mode sessions as completed.
+- **Decision Explainability** – Each agent returns structured explanations that the orchestrator logs and the UI displays. This forms the basis for compliance/audit trails and ensures users receive rationale for automated actions.
+
 ## Repository Layout
 
 ```
