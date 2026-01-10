@@ -1,24 +1,77 @@
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 from .base_agent import BaseAgent
+from ..core.decision import AgentDecision
 from ..services.problem_repository import ProblemRepository
 from ..services.session_state import ProblemSpec, SessionState
 
 
 class AdaptationAgent(BaseAgent):
     def __init__(self, repository: Optional[ProblemRepository] = None) -> None:
+        super().__init__(name="adaptation")
         self._repository = repository or ProblemRepository()
+        self._request: Dict[str, Any] = {}
+        self._candidate: Optional[ProblemSpec] = None
+        self._decision_timestamp: Optional[datetime] = None
 
-    def execute(self, state: SessionState, payload: Dict[str, Any], context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        requested_difficulty = payload.get("difficulty", state.difficulty)
-        topic = payload.get("topic", state.topic)
+    def observe(self, event: Dict[str, Any], state: SessionState) -> None:
+        payload = event.get("payload", {})
+        self._request = {
+            "difficulty": payload.get("difficulty", state.difficulty),
+            "topic": payload.get("topic", state.topic),
+        }
+        self._candidate = None
+        self._decision_timestamp = datetime.utcnow()
+
+    def decide(self, state: SessionState) -> AgentDecision:
+        requested_difficulty = self._request.get("difficulty", state.difficulty)
+        topic = self._request.get("topic", state.topic)
         problem = self._repository.find(topic, requested_difficulty) or self._repository.fallback(topic, requested_difficulty)
+        self._candidate = problem
         if not problem:
+            return AgentDecision(
+                agent=self.name,
+                decision_type="assignment_error",
+                rationale="No suitable problems available for requested criteria.",
+                confidence=0.25,
+                policy="fallback",
+                metadata={"requested_topic": topic, "requested_difficulty": requested_difficulty},
+            )
+        return AgentDecision(
+            agent=self.name,
+            decision_type="assign_problem",
+            rationale="Selected problem matching requested topic and difficulty.",
+            confidence=0.82,
+            policy="adaptive_curriculum",
+            metadata={
+                "problem_id": problem.id,
+                "difficulty": problem.difficulty,
+                "topic": problem.topic,
+            },
+        )
+
+    def act(self, decision: AgentDecision, state: SessionState) -> Dict[str, Any]:
+        if decision.decision_type != "assign_problem" or not self._candidate:
             state.status = "paused"
             return {"type": "assignment_error", "message": "No problems available"}
-        state.mark_problem(problem)
+        state.mark_problem(self._candidate)
         state.status = "active"
-        return {"type": "problem_assigned", "payload": problem.for_delivery()}
+        response = {
+            "type": "problem_assigned",
+            "payload": self._candidate.for_delivery(),
+        }
+        self._candidate = None
+        return response
+
+    def explain(self, decision: AgentDecision) -> Dict[str, Any]:
+        return {
+            "agent": self.name,
+            "decision": decision.decision_type,
+            "requested": self._request,
+            "timestamp": (self._decision_timestamp.isoformat() if self._decision_timestamp else None),
+            "metadata": decision.metadata,
+        }
 
     def after_submission(self, state: SessionState, evaluation: Dict[str, Any]) -> Dict[str, Any]:
         if not state.current_problem:
