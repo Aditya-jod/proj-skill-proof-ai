@@ -1,94 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillProof AI - Admin Dashboard</title>
-    <!-- Google Fonts -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SkillProof AI – Admin Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
-    <!-- Custom CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/app.css">
     <link rel="stylesheet" href="/static/css/dashboard.css">
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="#">SkillProof AI - Live Dashboard</a>
-            <div class="d-flex align-items-center">
-                <span class="badge bg-success rounded-pill me-2"></span>
-                <span id="connection-status">Connecting...</span>
+<body class="page-admin-dashboard">
+    <a href="#main" class="skip-link">Skip to content</a>
+    <header class="site-header" role="banner">
+        <div class="shell">
+            <a class="brand" href="/">
+                <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                    <path d="M21.8 7.2a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8l-14 14a2 2 0 0 1-2.8 0l-8-8a2 2 0 0 1 0-2.8l2.2-2.2a2 2 0 0 1 2.8 0l5.4 5.4z"></path>
+                </svg>
+                SkillProof AI
+            </a>
+            <button class="mobile-nav-toggle" type="button" aria-label="Toggle navigation" data-nav-toggle>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"></path>
+                </svg>
+            </button>
+            <nav class="primary-nav" data-nav aria-label="Primary">
+                <a href="/">Overview</a>
+                <a href="/access">Access</a>
+                <a href="/session">Candidate</a>
+            </nav>
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.95 6.95-1.414-1.414M7.464 7.464 6.05 6.05m12.728 0-1.414 1.414M7.464 16.536 6.05 17.95" stroke-linecap="round"></path>
+                    </svg>
+                </button>
+                <a class="button" href="/session">Start assessment</a>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <div class="container-fluid mt-4">
-        <!-- Summary Cards -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body d-flex align-items-center">
-                        <i class="bi bi-people-fill fs-1 text-primary me-3"></i>
-                        <div>
-                            <h5 class="card-title mb-1" id="active-users-card">0</h5>
-                            <p class="card-text text-muted mb-0">Active Users</p>
-                        </div>
-                    </div>
-                </div>
+    <main id="main" class="shell dashboard-shell" role="main">
+        <div class="dashboard-header">
+            <div>
+                <span class="badge muted">Operations</span>
+                <h1>Live assessment control</h1>
             </div>
-            <div class="col-md-4">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body d-flex align-items-center">
-                        <i class="bi bi-flag-fill fs-1 text-warning me-3"></i>
-                        <div>
-                            <h5 class="card-title mb-1" id="integrity-flags-card">0</h5>
-                            <p class="card-text text-muted mb-0">Total Integrity Flags</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill fs-1 text-success me-3"></i>
-                        <div>
-                            <h5 class="card-title mb-1" id="solved-count-card">0</h5>
-                            <p class="card-text text-muted mb-0">Problems Solved</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="live-status" id="live-status">
+                <span class="pulse" aria-hidden="true"></span>
+                <span id="connection-status">Connecting…</span>
             </div>
         </div>
 
-        <!-- Live Session Table -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-white border-0">
-                <h5 class="mb-0">Live Sessions</h5>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>User ID</th>
-                            <th>Status</th>
-                            <th>Last Event</th>
-                            <th>Last Decision</th>
-                            <th>Latest Feedback</th>
-                            <th>Integrity Flags</th>
-                            <th>Last Update</th>
-                        </tr>
-                    </thead>
-                    <tbody id="session-table-body">
-                        <!-- Rows will be dynamically inserted here -->
-                    </tbody>
-                </table>
+        <section class="summary-grid" aria-label="Performance overview">
+            <article class="summary-card">
+                <span>Active users</span>
+                <strong id="active-users-card">0</strong>
+                <small>Sessions connected</small>
+            </article>
+            <article class="summary-card">
+                <span>Integrity flags</span>
+                <strong id="integrity-flags-card">0</strong>
+                <small>Escalations today</small>
+            </article>
+            <article class="summary-card">
+                <span>Problems solved</span>
+                <strong id="solved-count-card">0</strong>
+                <small>Completed submissions</small>
+            </article>
+        </section>
+
+        <div class="panels-grid">
+            <section class="live-table" aria-label="Live sessions">
+                <header>
+                    <h2>Active sessions</h2>
+                    <span class="subdued">Ordered by most recent activity</span>
+                </header>
+                <div class="table-wrapper">
+                    <table class="table" role="grid">
+                        <thead>
+                            <tr>
+                                <th scope="col">User</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Event</th>
+                                <th scope="col">Last decision</th>
+                                <th scope="col">Latest feedback</th>
+                                <th scope="col">Flags</th>
+                                <th scope="col">Last update</th>
+                            </tr>
+                        </thead>
+                        <tbody id="session-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <aside class="activity-panel" aria-label="Session activity">
+                <header>Session log</header>
+                <div class="activity-feed" id="activity-feed">
+                    <p class="subdued">Waiting for session activity…</p>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer class="footer" role="contentinfo">
+        <div class="shell">
+            <span class="subdued">© 2026 SkillProof AI</span>
+            <div class="footer-nav">
+                <a href="/">Overview</a>
+                <a href="/session">Candidate</a>
             </div>
         </div>
-    </div>
-    <script src="/static/js/dashboard.js"></script>
+    </footer>
+
+    <script src="/static/js/site.js" defer></script>
+    <script src="/static/js/dashboard.js" defer></script>
 </body>
 </html>

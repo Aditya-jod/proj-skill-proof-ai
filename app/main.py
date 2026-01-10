@@ -38,6 +38,10 @@ async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:  
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/access", response_class=HTMLResponse)
+async def read_access(request: Request):
+    return templates.TemplateResponse("access.html", {"request": request})
+
 @app.get("/session", response_class=HTMLResponse)
 async def read_session(request: Request):
     return templates.TemplateResponse("session.html", {"request": request})

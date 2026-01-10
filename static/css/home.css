@@ -1,30 +1,97 @@
-:root {
-    --primary-color: #0d6efd;
-    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+body.page-landing {
+    background: radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 55%), var(--bg-soft);
 }
 
-body {
-    font-family: var(--font-family);
+.hero-visual {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.navbar {
-    box-shadow: 0 2px 4px rgba(0,0,0,.08);
+.hero-visual .panel {
+    background: var(--bg-elevated);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-soft);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
 }
 
-.hero-section {
-    background: linear-gradient(45deg, rgba(13, 110, 253, 0.1), rgba(255, 255, 255, 0.1));
-    padding: 120px 0;
-    margin-top: 56px; /* Adjust for fixed navbar */
+.metrics-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 32px;
 }
 
-.feature-card {
-    padding: 2rem;
-    border-radius: 0.75rem;
-    background-color: #f8f9fa;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+.metrics-strip .metric {
+    min-width: 160px;
+    padding: 16px 18px;
+    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-sm);
 }
 
-.feature-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+.metrics-strip .metric strong {
+    display: block;
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+}
+
+.how-it-works {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.how-it-works .step {
+    position: relative;
+    padding-top: 56px;
+}
+
+.how-it-works .step::before {
+    content: attr(data-step);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.cta-banner {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 60%);
+    color: #fff;
+    border-radius: calc(var(--radius-lg) + 6px);
+    padding: 52px;
+    display: grid;
+    gap: 20px;
+    align-items: center;
+}
+
+.cta-banner p {
+    color: rgba(255, 255, 255, 0.82);
+    margin: 0;
+}
+
+.use-cases .card {
+    align-self: stretch;
+}
+
+.use-cases .card h4 {
+    margin-bottom: 10px;
+}
+
+.use-cases .card .badge {
+    margin-bottom: 18px;
+}
+
+@media (max-width: 880px) {
+    .cta-banner {
+        padding: 36px;
+    }
 }

@@ -1,123 +1,178 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillProof AI - Coding Environment</title>
-    <!-- Google Fonts -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SkillProof AI – Candidate Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- CodeMirror CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
-    <!-- Custom CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/app.css">
     <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.css" integrity="sha512-0n3vjC5sw/YNnKQYhjYQUzGynPTFnmTaAcPP4n1vCtbmZhDWAVxGqIb0CWr6MzZYupFPiOiA7Ia2BgMC+T0Yiw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/neo.min.css" integrity="sha512-ycWzLg+WWlZkKQhDSjYtmknAXr1+afFvSk1LvwWS1bY9iKCIdyVACQv3cA1F5uEqmVsqI/0fzXxulrSZcOy7jQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/material-darker.min.css" integrity="sha512-Mm2vc1Onec+rfa0F1QG3WhvlO0YdWEHIbnfXewBuqV1LiuT568vH1c8Ym7Jppvs0roMrOs0PMF0PD0Xg1ZRmwg==" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
-<body>
-
-    <nav class="navbar navbar-expand-lg navbar-light bg-white">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">SkillProof AI</a>
+<body class="page-user-dashboard">
+    <a href="#main" class="skip-link">Skip to content</a>
+    <header class="site-header" role="banner">
+        <div class="shell">
+            <a class="brand" href="/">
+                <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                    <path d="M21.8 7.2a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8l-14 14a2 2 0 0 1-2.8 0l-8-8a2 2 0 0 1 0-2.8l2.2-2.2a2 2 0 0 1 2.8 0l5.4 5.4z"></path>
+                </svg>
+                SkillProof AI
+            </a>
+            <button class="mobile-nav-toggle" type="button" aria-label="Toggle navigation" data-nav-toggle>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"></path>
+                </svg>
+            </button>
+            <nav class="primary-nav" data-nav aria-label="Primary">
+                <a href="/">Overview</a>
+                <a href="/access">Access</a>
+                <a href="/dashboard">Admin</a>
+            </nav>
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.95 6.95-1.414-1.414M7.464 7.464 6.05 6.05m12.728 0-1.414 1.414M7.464 16.536 6.05 17.95" stroke-linecap="round"></path>
+                    </svg>
+                </button>
+                <a class="button button-muted" href="/access">Switch Candidate</a>
+            </div>
         </div>
-    </nav>
+    </header>
 
-    <div class="container mt-5 container-transition fade-in-down" id="setup-container">
-        <div class="col-lg-8 mx-auto">
-            <div class="card shadow-sm">
-                <div class="card-body p-5">
-                    <h2 class="card-title fw-bold mb-3">Start Your Session</h2>
-                    <p class="card-text text-muted mb-4">First, let's configure your assessment environment to match your skill level and goals.</p>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label for="difficulty" class="form-label">Difficulty</label>
-                            <select id="difficulty" class="form-select">
-                                <option value="easy" selected>Easy</option>
-                                <option value="medium">Medium</option>
-                                <option value="hard">Hard</option>
+    <main id="main" class="shell session-shell" role="main">
+        <section id="setup-container" class="container-transition fade-in-down" aria-labelledby="setup-heading">
+            <div class="workspace-card" role="form">
+                <header class="workspace-header">
+                    <span class="badge muted">Session setup</span>
+                    <h2 id="setup-heading">Configure your assessment</h2>
+                    <p>Select your starting parameters. You can escalate difficulty as you progress.</p>
+                </header>
+                <div class="workspace-editor">
+                    <div class="insights-grid">
+                        <label class="sidebar-card" for="difficulty">
+                            <h3>Difficulty</h3>
+                            <select id="difficulty">
+                                <option value="easy">Foundational</option>
+                                <option value="medium">Intermediate</option>
+                                <option value="hard">Advanced</option>
                             </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="language" class="form-label">Language</label>
-                            <select id="language" class="form-select">
-                                <option value="python" selected>Python</option>
-                                <option value="javascript" disabled>JavaScript (coming soon)</option>
+                        </label>
+                        <label class="sidebar-card" for="language">
+                            <h3>Language</h3>
+                            <select id="language">
+                                <option value="python">Python</option>
+                                <option value="javascript" disabled>JavaScript (soon)</option>
                             </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="topic" class="form-label">Topic</label>
-                            <select id="topic" class="form-select">
-                                <option value="recursion" selected>Recursion</option>
-                                <option value="arrays" disabled>Arrays (coming soon)</option>
-                                <option value="data_structures" disabled>Data Structures (coming soon)</option>
+                        </label>
+                        <label class="sidebar-card" for="topic">
+                            <h3>Topic focus</h3>
+                            <select id="topic">
+                                <option value="recursion">Recursion</option>
+                                <option value="arrays" disabled>Arrays (soon)</option>
+                                <option value="data_structures" disabled>Data Structures (soon)</option>
                             </select>
-                        </div>
-                    </div>
-                    <div class="text-end mt-4">
-                        <button class="btn btn-primary btn-lg" onclick="startSession()">Start Assessment</button>
+                        </label>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container mt-4 container-transition fade-out-up" id="coding-container">
-        <div class="d-flex justify-content-between align-items-center p-3 mb-3 bg-white rounded shadow-sm">
-            <h4 class="mb-0 fw-bold">SkillProof AI Environment</h4>
-            <span id="session-mode-badge" class="badge bg-primary rounded-pill fs-6"></span>
-        </div>
-
-        <div class="card shadow-sm">
-            <div class="card-header bg-white border-0 pt-3">
-                <h5 id="problem-title" class="card-title mb-0">Problem: Loading...</h5>
-            </div>
-            <div class="card-body p-2">
-                <textarea id="code" rows="20" cols="80"></textarea>
-            </div>
-            <div class="card-footer bg-white text-end border-0 pb-3">
-                <button class="btn btn-outline-secondary" onclick="requestHint()">Request Hint</button>
-                <button class="btn btn-success" onclick="submitCode()">Submit & Evaluate</button>
-            </div>
-        </div>
-
-        <div class="mt-4">
-            <h5 class="text-muted">Output & Feedback</h5>
-            <div id="output" class="shadow-inner">
-                &gt; System ready. Waiting for session to start...
-            </div>
-        </div>
-
-        <div class="row mt-4 g-3" id="insights-panels">
-            <div class="col-lg-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-white border-0">
-                        <h6 class="mb-0 text-muted">Decision Trail</h6>
-                    </div>
-                    <div class="card-body pt-2">
-                        <ul id="decision-log" class="panel-list list-unstyled mb-0"></ul>
-                    </div>
+                <div class="workspace-controls">
+                    <button class="button" type="button" onclick="startSession()">Start assessment</button>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-white border-0">
-                        <h6 class="mb-0 text-muted">Agent Feedback</h6>
-                    </div>
-                    <div class="card-body pt-2">
-                        <div id="agent-explanation" class="explanation-banner text-muted mb-3">Awaiting agent decisions...</div>
-                        <ul id="agent-feedback" class="panel-list list-unstyled mb-0"></ul>
+        </section>
+
+        <section id="coding-container" class="container-transition fade-out-up" aria-live="polite" hidden>
+            <div class="session-header">
+                <div class="session-info">
+                    <span class="badge muted" id="session-mode-badge">Configuring</span>
+                    <h1 id="problem-title">Problem: Loading…</h1>
+                    <div class="session-meta">
+                        <span id="candidate-name" aria-label="Candidate name">Candidate · Anonymous</span>
+                        <span id="session-timer" aria-label="Session timer">Timer · 00:00</span>
                     </div>
                 </div>
+                <div class="session-actions">
+                    <button class="button button-muted" type="button" onclick="requestHint()">Request hint</button>
+                    <button class="button" type="button" onclick="submitCode()">Submit & evaluate</button>
+                </div>
+            </div>
+
+            <div class="session-grid">
+                <article class="workspace-card" aria-label="Coding workspace">
+                    <header class="workspace-header">
+                        <span class="badge muted">Editor</span>
+                        <h2>Implement your solution</h2>
+                        <p id="problem-summary">Details loading…</p>
+                    </header>
+                    <div class="workspace-editor">
+                        <textarea id="code" rows="20" cols="80"></textarea>
+                    </div>
+                    <footer class="workspace-controls">
+                        <button class="button button-muted" type="button" onclick="requestHint()">Need context</button>
+                        <button class="button" type="button" onclick="submitCode()">Submit solution</button>
+                    </footer>
+                </article>
+
+                <aside class="sidebar" aria-label="Session insights">
+                    <section class="sidebar-card" id="session-status-card" data-status="ok">
+                        <h3>Status overview</h3>
+                        <dl>
+                            <dt>Session state</dt>
+                            <dd id="session-status">Configuring</dd>
+                            <dt>Integrity</dt>
+                            <dd><span class="integrity-status" id="integrity-status">Clean focus</span></dd>
+                            <dt>Hints used</dt>
+                            <dd id="hint-count">0</dd>
+                        </dl>
+                    </section>
+                    <section class="sidebar-card">
+                        <h3>Active challenge</h3>
+                        <p class="subdued" id="challenge-detail">Awaiting assignment…</p>
+                    </section>
+                </aside>
+            </div>
+
+            <article class="output-panel" aria-label="Live output">
+                <header>
+                    <h3>Console</h3>
+                    <span class="subdued">System events & results</span>
+                </header>
+                <div id="output">
+                    &gt; System ready. Waiting for session to start…
+                </div>
+            </article>
+
+            <div class="insights-grid" id="insights-panels">
+                <section class="insight-card" aria-labelledby="decision-title">
+                    <header id="decision-title">Decision trail</header>
+                    <ul id="decision-log" class="panel-list"></ul>
+                </section>
+                <section class="insight-card" aria-labelledby="feedback-title">
+                    <header id="feedback-title">Agent feedback</header>
+                    <div id="agent-explanation" class="explanation-banner">Awaiting agent decisions…</div>
+                    <ul id="agent-feedback" class="panel-list"></ul>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer" role="contentinfo">
+        <div class="shell">
+            <span class="subdued">© 2026 SkillProof AI</span>
+            <div class="footer-nav">
+                <a href="/">Overview</a>
+                <a href="/dashboard">Admin</a>
             </div>
         </div>
-    </div>
+    </footer>
 
-    <!-- CodeMirror JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
-    <!-- Custom JS -->
-    <script src="/static/js/main.js"></script>
+    <script src="/static/js/site.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.js" integrity="sha512-LC9SShm5bshikcZTkTqhGzFCATP1d1zFBBbc03AikAAkK0CpjCq+FsKiXaYx7Cf/5TYct+CnCQWLh4dD63R1jQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/python/python.min.js" integrity="sha512-mw63HZ6K1hKjQ+3uML1weE0zqc46qWl5F5LBzXw+5WcGC0a6xCEEV0250S1mYFZKh8ctYLM4m+29h2C49eogCA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="/static/js/main.js" defer></script>
 </body>
 </html>

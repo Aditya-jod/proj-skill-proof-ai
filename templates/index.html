@@ -1,85 +1,228 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillProof AI - Prove Your Coding Skills</title>
-    <!-- Google Fonts -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SkillProof AI – Proving real skills, not just answers.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/app.css">
     <link rel="stylesheet" href="/static/css/home.css">
 </head>
-<body>
-
-    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">SkillProof AI</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+<body class="page-landing">
+    <a href="#main" class="skip-link">Skip to content</a>
+    <header class="site-header" role="banner">
+        <div class="shell">
+            <a class="brand" href="/">
+                <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                    <path d="M21.8 7.2a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8l-14 14a2 2 0 0 1-2.8 0l-8-8a2 2 0 0 1 0-2.8l2.2-2.2a2 2 0 0 1 2.8 0l5.4 5.4z"></path>
+                </svg>
+                SkillProof AI
+            </a>
+            <button class="mobile-nav-toggle" type="button" aria-label="Toggle navigation" data-nav-toggle>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"></path>
+                </svg>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#features">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#about">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-primary ms-lg-3" href="/session">Start Assessment</a>
-                    </li>
-                </ul>
+            <nav class="primary-nav" data-nav aria-label="Primary">
+                <a href="#problem">Problem</a>
+                <a href="#platform">Platform</a>
+                <a href="#use-cases">Use Cases</a>
+                <a href="#features">Features</a>
+            </nav>
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.95 6.95-1.414-1.414M7.464 7.464 6.05 6.05m12.728 0-1.414 1.414M7.464 16.536 6.05 17.95" stroke-linecap="round"></path>
+                    </svg>
+                </button>
+                <a class="button button-muted" href="/access">Access</a>
+                <a class="button" href="/session">Start Assessment</a>
             </div>
-        </div>
-    </nav>
-
-    <header class="hero-section">
-        <div class="container text-center">
-            <h1 class="display-4 fw-bold">The Future of Technical Assessment is Here</h1>
-            <p class="lead my-4">SkillProof AI uses a multi-agent system to provide a dynamic, adaptive, and cheat-proof environment for evaluating real-world coding skills.</p>
-            <a class="btn btn-primary btn-lg" href="/session">Take a Free Assessment</a>
         </div>
     </header>
 
-    <section id="features" class="py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold">Why SkillProof AI?</h2>
-                <p class="text-muted">Go beyond traditional coding tests.</p>
+    <main id="main">
+        <section class="shell hero" aria-labelledby="hero-title">
+            <div class="hero-copy">
+                <span class="tagline">Proving real skills, not just answers.</span>
+                <h1 id="hero-title">The assessment platform built for agentic AI and human trust.</h1>
+                <p>SkillProof AI orchestrates specialized agents to challenge, evaluate, and support talent in real time. Adaptive coding environments, integrity insights, and transparent feedback—all in one professional-grade platform.</p>
+                <div class="hero-actions">
+                    <a class="button" href="/session">Start Assessment</a>
+                    <a class="button button-muted" href="#platform">Explore the platform</a>
+                </div>
+                <div class="metrics-strip" role="list">
+                    <div class="metric" role="listitem">
+                        <strong>92%</strong>
+                        <span class="subdued">Candidate engagement</span>
+                    </div>
+                    <div class="metric" role="listitem">
+                        <strong>12k+</strong>
+                        <span class="subdued">Assessments automated</span>
+                    </div>
+                    <div class="metric" role="listitem">
+                        <strong>4 agents</strong>
+                        <span class="subdued">Collaborating live</span>
+                    </div>
+                </div>
             </div>
-            <div class="row text-center">
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <h4 class="fw-bold">Adaptive Challenges</h4>
-                        <p>Problems adjust in real-time based on your performance, ensuring a true measure of your ability.</p>
-                    </div>
+            <div class="hero-visual" aria-hidden="true">
+                <div class="panel">
+                    <h3>Signal over noise</h3>
+                    <p>Every submission is scored with evaluation context, reasoning diagnostics, and integrity signals.</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <h4 class="fw-bold">Intelligent Hinting</h4>
-                        <p>Our AI agents provide contextual hints that guide you without giving away the solution.</p>
-                    </div>
+                <div class="panel">
+                    <h3>Human-readable trails</h3>
+                    <p>Decision logs capture why agents adapted difficulty, flagged behavior, or delivered hints.</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <h4 class="fw-bold">Integrity Monitoring</h4>
-                        <p>Advanced monitoring detects tab-switching and other potential integrity breaches.</p>
-                    </div>
+                <div class="panel">
+                    <h3>Launch-ready UX</h3>
+                    <p>Dark and light modes, keyboard flows, and responsive layouts feel like your favorite SaaS tools.</p>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <footer class="bg-dark text-white text-center py-4">
-        <div class="container">
-            <p class="mb-0">&copy; 2026 SkillProof AI. All Rights Reserved.</p>
+        <section id="problem" class="section tight" aria-labelledby="problem-title">
+            <div class="shell">
+                <div class="section-header">
+                    <h2 id="problem-title">Traditional coding tests miss the real picture.</h2>
+                    <p>SkillProof AI measures authentic skill through agentic collaboration, contextual hints, and integrity awareness.</p>
+                </div>
+                <div class="grid cols-3">
+                    <article class="card">
+                        <h4>Static assessments</h4>
+                        <p>Everyone receives the same questions, regardless of mastery level or growth trajectory.</p>
+                    </article>
+                    <article class="card">
+                        <h4>Opaque scoring</h4>
+                        <p>Results rarely explain how decisions were made, leaving candidates and reviewers in the dark.</p>
+                    </article>
+                    <article class="card">
+                        <h4>Fragile integrity</h4>
+                        <p>Cheat detection is reactive and superficial, undermining trust for hiring teams and faculty.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="platform" class="section" aria-labelledby="platform-title">
+            <div class="shell">
+                <div class="section-header">
+                    <h2 id="platform-title">How SkillProof works</h2>
+                    <p>Agentic orchestration keeps candidates in flow while delivering reliable evidence for decision makers.</p>
+                </div>
+                <div class="grid how-it-works">
+                    <article class="card step" data-step="01">
+                        <h3>Adaptive orchestration</h3>
+                        <p>The Orchestrator Agent routes every event to the right specialist, updating state and telemetry instantly.</p>
+                    </article>
+                    <article class="card step" data-step="02">
+                        <h3>Real-time evaluation</h3>
+                        <p>Evaluation, learning diagnosis, and hint agents analyze code, highlight risk, and surface context-rich feedback.</p>
+                    </article>
+                    <article class="card step" data-step="03">
+                        <h3>Evidence dashboards</h3>
+                        <p>Dashboards expose integrity signals, session logs, and progression insights for administrators and coaches.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="section tight" aria-labelledby="features-title">
+            <div class="shell">
+                <div class="section-header">
+                    <h2 id="features-title">Platform capabilities</h2>
+                    <p>Everything you need to facilitate trustworthy, developer-first assessments.</p>
+                </div>
+                <div class="grid cols-3">
+                    <article class="card">
+                        <h4>Adaptive challenge engine</h4>
+                        <p>Calibrate problem difficulty in-session based on performance, hints used, and integrity posture.</p>
+                    </article>
+                    <article class="card">
+                        <h4>Contextual hinting</h4>
+                        <p>Provide assistive guidance that reinforces concepts without revealing complete solutions.</p>
+                    </article>
+                    <article class="card">
+                        <h4>Agent audit trails</h4>
+                        <p>Full message bus history, agent rationale, and policy metadata for compliance-ready transparency.</p>
+                    </article>
+                    <article class="card">
+                        <h4>Integrity intelligence</h4>
+                        <p>Monitor focus shifts, inactivity, and webcam alerts with escalating policies.</p>
+                    </article>
+                    <article class="card">
+                        <h4>Unified dashboards</h4>
+                        <p>Candidate and admin views share a consistent design language for zero-friction coaching.</p>
+                    </article>
+                    <article class="card">
+                        <h4>API-first architecture</h4>
+                        <p>FastAPI backbone with WebSocket streaming keeps integrations and automation straightforward.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="use-cases" class="section" aria-labelledby="use-cases-title">
+            <div class="shell">
+                <div class="section-header">
+                    <h2 id="use-cases-title">Built for every assessment journey</h2>
+                    <p>Purpose-built flows for candidates, educators, hiring teams, and enterprises.</p>
+                </div>
+                <div class="grid cols-4 use-cases">
+                    <article class="card">
+                        <span class="badge muted">Students</span>
+                        <h4>Practice with live coaching</h4>
+                        <p>Adaptive hints and decision logs help learners understand why answers are right—not just that they are.</p>
+                    </article>
+                    <article class="card">
+                        <span class="badge muted">Colleges</span>
+                        <h4>Scale integrity across cohorts</h4>
+                        <p>Monitor academic honesty and engagement in one pane of glass during remote or hybrid exams.</p>
+                    </article>
+                    <article class="card">
+                        <span class="badge muted">Enterprises</span>
+                        <h4>Upskill your teams</h4>
+                        <p>Deliver tailored coding sprints with transparent feedback your engineers will respect.</p>
+                    </article>
+                    <article class="card">
+                        <span class="badge muted">Hiring teams</span>
+                        <h4>Evaluate beyond resumes</h4>
+                        <p>Capture behavioral signals and skill profiles to inform confident hiring decisions.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" aria-labelledby="cta-title">
+            <div class="shell">
+                <div class="cta-banner">
+                    <div>
+                        <h2 id="cta-title">Ready to experience agentic assessments?</h2>
+                        <p>Launch your first SkillProof session and capture the evidence you need to trust every technical decision.</p>
+                    </div>
+                    <div class="hero-actions">
+                        <a class="button" href="/session">Start Assessment</a>
+                        <a class="button button-muted" href="/dashboard">View Admin Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer" role="contentinfo">
+        <div class="shell">
+            <span class="subdued">© 2026 SkillProof AI. Every decision traceable.</span>
+            <div class="footer-nav">
+                <a href="/access">Access</a>
+                <a href="/session">Candidate</a>
+                <a href="/dashboard">Admin</a>
+            </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/site.js" defer></script>
 </body>
 </html>
