@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from difflib import SequenceMatcher
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 
 @dataclass
@@ -42,6 +42,7 @@ class SubmissionRecord:
     guess_probability: float = 0.0
     reasoning_label: str = "undetermined"
     notes: str = ""
+    difficulty: str = ""
 
 
 @dataclass
@@ -219,12 +220,14 @@ class SessionState:
     decision_history: List[Dict[str, Any]] = field(default_factory=list)
     agent_feedback: Dict[str, List[str]] = field(default_factory=dict)
     feedback_events: List[Dict[str, Any]] = field(default_factory=list)
+    assigned_problem_ids: Set[str] = field(default_factory=set)
 
     def mark_problem(self, problem: ProblemSpec) -> None:
         self.current_problem = problem
         self.difficulty = problem.difficulty
         self.topic = problem.topic
         self.difficulty_history.append(problem.difficulty)
+        self.assigned_problem_ids.add(problem.id)
 
     def add_submission(self, code: str, evaluation: Dict[str, Any]) -> SubmissionRecord:
         now = datetime.utcnow()
@@ -247,6 +250,7 @@ class SessionState:
             tests_failed=failed,
             total_tests=total_tests,
             status=status,
+            difficulty=self.difficulty,
         )
         self.submissions.append(record)
         return record
@@ -271,6 +275,21 @@ class SessionState:
         if not self.submissions:
             return None
         return self.submissions[-1]
+
+    def consecutive_passes(self) -> int:
+        if not self.submissions:
+            return 0
+        current_difficulty = self.difficulty
+        count = 0
+        for record in reversed(self.submissions):
+            if record.difficulty != current_difficulty:
+                if count > 0:
+                    break
+                continue
+            if record.status != "passed":
+                break
+            count += 1
+        return count
 
     def as_summary(self) -> Dict[str, Any]:
         return {

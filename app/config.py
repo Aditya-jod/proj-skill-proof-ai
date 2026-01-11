@@ -1,14 +1,16 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    DATABASE_URL: str = "sqlite:///./skillproof.db"
-    GROQ_API_KEY: str = ""
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    class Config:
-        env_file = ".env"
+    DATABASE_URL: str = "sqlite:///./skillproof.db"
+    GOOGLE_API_KEY: str = ""
+    SESSION_SECRET_KEY: str = "change-me"
+    ADMIN_EMAIL: str = "admin@example.com"
+    ADMIN_PASSWORD: str = "admin123"
 
 
 settings = Settings()

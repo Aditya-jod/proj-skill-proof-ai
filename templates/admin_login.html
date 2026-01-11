@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Access SkillProof AI</title>
+    <title>Admin Sign In – SkillProof AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -28,7 +28,6 @@
             <nav class="primary-nav" data-nav aria-label="Primary">
                 <a href="/">Overview</a>
                 <a href="/access">Candidate</a>
-                <a href="/admin/login">Admin</a>
             </nav>
             <div class="nav-actions">
                 <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
@@ -36,45 +35,33 @@
                         <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.95 6.95-1.414-1.414M7.464 7.464 6.05 6.05m12.728 0-1.414 1.414M7.464 16.536 6.05 17.95" stroke-linecap="round"></path>
                     </svg>
                 </button>
-                <a class="button" href="/session">Start Assessment</a>
+                <a class="button button-muted" href="/">Back</a>
             </div>
         </div>
     </header>
 
     <main id="main" class="access-shell" role="main">
-        <section class="form-card" aria-labelledby="access-heading">
+        <section class="form-card" aria-labelledby="admin-access-heading">
             <header>
-                <span class="badge muted">Secure access</span>
-                <h1 id="access-heading">Enter your details to begin</h1>
-                <p>We'll personalize your session and keep stakeholders informed. No passwords, no friction—just essential context.</p>
+                <span class="badge muted">Administrator access</span>
+                <h1 id="admin-access-heading">Sign in to manage assessments</h1>
+                <p>Sign in with the administrator account seeded for this deployment.</p>
             </header>
-            <div class="mode-toggle" data-auth-mode-toggle>
-                <button type="button" class="toggle selected" data-mode="login">Sign in</button>
-                <button type="button" class="toggle" data-mode="register">Create account</button>
-            </div>
-
-            <form id="access-form" class="form-grid" autocomplete="on" novalidate data-auth-mode="login">
-                <div class="field" data-auth-section="register">
-                    <label for="auth-name">Full name</label>
-                    <input id="auth-name" name="name" type="text" inputmode="text" placeholder="Alex Johnson" autocomplete="name">
+            <form id="admin-access-form" class="form-grid" autocomplete="on" novalidate>
+                <div class="field">
+                    <label for="admin-email">Email address</label>
+                    <input id="admin-email" name="email" type="email" inputmode="email" placeholder="admin@example.com" required>
                 </div>
                 <div class="field">
-                    <label for="auth-email">Email address</label>
-                    <input id="auth-email" name="email" type="email" inputmode="email" placeholder="alex@team.com" autocomplete="email" required>
-                    <p class="helper" data-auth-copy="register">We use your email to keep track of session progress.</p>
+                    <label for="admin-password">Password</label>
+                    <input id="admin-password" name="password" type="password" placeholder="Your password" required>
                 </div>
-                <div class="field">
-                    <label for="auth-password">Password</label>
-                    <input id="auth-password" name="password" type="password" placeholder="Your password" minlength="8" autocomplete="current-password" required>
-                    <p class="helper" data-auth-copy="register">Use at least 8 characters with a mix of letters and numbers.</p>
-                </div>
-                <p id="auth-error" class="error" role="alert" hidden></p>
+                <p id="admin-access-error" class="error" role="alert" hidden></p>
                 <div class="actions">
-                    <a class="button button-muted" href="/">Back</a>
-                    <button class="button" type="submit" data-auth-submit>Continue to dashboard</button>
+                    <a class="button button-muted" href="/">Cancel</a>
+                    <button class="button" type="submit">Sign in</button>
                 </div>
             </form>
-            <p class="notice">By creating an account you agree to SkillProof AI retaining your details for this session. Your information never leaves your device without consent.</p>
         </section>
     </main>
 
@@ -82,14 +69,13 @@
         <div class="shell shell-wide">
             <span class="subdued">© 2026 SkillProof AI</span>
             <div class="footer-nav">
-                <a href="/">Overview</a>
-                <a href="/session">Candidate</a>
-                <a href="/dashboard">Admin</a>
+                <a href="/access">Candidate</a>
+                <a href="/dashboard">Admin dashboard</a>
             </div>
         </div>
     </footer>
 
     <script src="/static/js/site.js" defer></script>
-    <script src="/static/js/access.js" defer></script>
+    <script src="/static/js/admin-login.js" defer></script>
 </body>
 </html>

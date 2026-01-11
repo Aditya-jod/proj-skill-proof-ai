@@ -5,6 +5,7 @@ const activeUsersCard = document.getElementById('active-users-card');
 const integrityFlagsCard = document.getElementById('integrity-flags-card');
 const solvedCountCard = document.getElementById('solved-count-card');
 const activityFeed = document.getElementById('activity-feed');
+const logoutButton = document.getElementById('admin-logout');
 
 const clientId = typeof crypto !== 'undefined' && crypto.randomUUID
     ? `admin_${crypto.randomUUID()}`
@@ -15,6 +16,20 @@ const socket = new WebSocket(`${wsScheme}://${window.location.host}/ws/${clientI
 const userSessions = {};
 const activityLog = [];
 const MAX_ACTIVITY = 30;
+
+if (logoutButton) {
+    logoutButton.addEventListener('click', async () => {
+        try {
+            await fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include',
+            });
+        } catch (error) {
+            console.warn('Failed to call logout endpoint', error);
+        }
+        window.location.href = '/admin/login';
+    });
+}
 
 const setConnectionState = (state) => {
     const text = state === 'connected' ? 'Connected' : state === 'reconnecting' ? 'Reconnecting…' : 'Disconnected';

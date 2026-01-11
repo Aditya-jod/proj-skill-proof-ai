@@ -13,7 +13,7 @@
 <body class="page-admin-dashboard">
     <a href="#main" class="skip-link">Skip to content</a>
     <header class="site-header" role="banner">
-        <div class="shell">
+        <div class="shell shell-wide">
             <a class="brand" href="/">
                 <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
                     <path d="M21.8 7.2a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8l-14 14a2 2 0 0 1-2.8 0l-8-8a2 2 0 0 1 0-2.8l2.2-2.2a2 2 0 0 1 2.8 0l5.4 5.4z"></path>
@@ -36,12 +36,13 @@
                         <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.95 6.95-1.414-1.414M7.464 7.464 6.05 6.05m12.728 0-1.414 1.414M7.464 16.536 6.05 17.95" stroke-linecap="round"></path>
                     </svg>
                 </button>
-                <a class="button" href="/session">Start assessment</a>
+                <a class="button button-muted" href="/session">Candidate view</a>
+                <button class="button" type="button" id="admin-logout">Sign out</button>
             </div>
         </div>
     </header>
 
-    <main id="main" class="shell dashboard-shell" role="main">
+    <main id="main" class="shell shell-wide dashboard-shell" role="main">
         <div class="dashboard-header">
             <div>
                 <span class="badge muted">Operations</span>
@@ -105,7 +106,7 @@
     </main>
 
     <footer class="footer" role="contentinfo">
-        <div class="shell">
+        <div class="shell shell-wide">
             <span class="subdued">© 2026 SkillProof AI</span>
             <div class="footer-nav">
                 <a href="/">Overview</a>

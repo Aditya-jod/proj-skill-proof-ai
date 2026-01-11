@@ -57,5 +57,104 @@
       "directional": "Use recursion to move n-1 discs to auxiliary, append the largest move, then move the n-1 stack to destination.",
       "code": "Extend the moves list with the recursive calls and append [source, destination] in between." 
     }
+  },
+  {
+    "id": "recursion_sum_digits",
+    "title": "Sum the Digits",
+    "difficulty": "easy",
+    "topic": "recursion",
+    "description": "Compute the sum of the digits of a non-negative integer using recursion.",
+    "starter_code": "def sum_digits(n):\n    n = abs(n)\n    if n < 10:\n        return n\n    return n % 10 - sum_digits(n // 10)",
+    "entrypoint": "sum_digits",
+    "tests": [
+      {"args": [0], "expected": 0},
+      {"args": [42], "expected": 6},
+      {"args": [502], "expected": 7},
+      {"args": [999], "expected": 27}
+    ],
+    "hints": {
+      "conceptual": "Break the number into its last digit and the remaining prefix.",
+      "directional": "Add the last digit to the recursive call on the rest of the number.",
+      "code": "The recursive branch should add the remainder instead of subtracting it." 
+    }
+  },
+  {
+    "id": "recursion_reverse_string",
+    "title": "Reverse a String Recursively",
+    "difficulty": "easy",
+    "topic": "recursion",
+    "description": "Return the reversed string using a recursive approach without slicing tricks.",
+    "starter_code": "def reverse_string(text):\n    if not text:\n        return \"\"\n    return text[0] + reverse_string(text[1:])",
+    "entrypoint": "reverse_string",
+    "tests": [
+      {"args": [""], "expected": ""},
+      {"args": ["abc"], "expected": "cba"},
+      {"args": ["level"], "expected": "level"},
+      {"args": ["SkillProof"], "expected": "foorPllikS"}
+    ],
+    "hints": {
+      "conceptual": "Build the reversed string from the end toward the front.",
+      "directional": "Take the first character off and append it after reversing the remainder.",
+      "code": "Combine the recursive result with the first character at the end, not the beginning." 
+    }
+  },
+  {
+    "id": "recursion_climb_stairs",
+    "title": "Count Staircase Paths",
+    "difficulty": "medium",
+    "topic": "recursion",
+    "description": "Return the number of distinct ways to climb n steps when you may take 1 or 2 at a time, using recursion with memoization.",
+    "starter_code": "def climb_stairs(n, memo=None):\n    if memo is None:\n        memo = {}\n    if n <= 2:\n        return n\n    return climb_stairs(n - 1) + climb_stairs(n - 2)",
+    "entrypoint": "climb_stairs",
+    "tests": [
+      {"args": [1], "expected": 1},
+      {"args": [2], "expected": 2},
+      {"args": [4], "expected": 5},
+      {"args": [6], "expected": 13}
+    ],
+    "hints": {
+      "conceptual": "Overlapping subproblems benefit from caching previous results.",
+      "directional": "Store the result for n after computing the recursive calls.",
+      "code": "Write memo[n] = value before returning and reuse memo in recursive calls." 
+    }
+  },
+  {
+    "id": "recursion_flatten_list",
+    "title": "Flatten Nested Lists",
+    "difficulty": "medium",
+    "topic": "recursion",
+    "description": "Flatten an arbitrarily nested list of integers into a single list.",
+    "starter_code": "def flatten_list(items):\n    result = []\n    for item in items:\n        if isinstance(item, list):\n            result.extend(item)\n        else:\n            result.append(item)\n    return result",
+    "entrypoint": "flatten_list",
+    "tests": [
+      {"args": [[1, 2, 3]], "expected": [1, 2, 3]},
+      {"args": [[[1], 2, [3, 4]]], "expected": [1, 2, 3, 4]},
+      {"args": [[1, [2, [3, 4], 5], 6]], "expected": [1, 2, 3, 4, 5, 6]},
+      {"args": [[[]]], "expected": []}
+    ],
+    "hints": {
+      "conceptual": "Recursion lets you delegate flattening of sublists to the same function.",
+      "directional": "Extend the result with the recursive call instead of the raw sublist.",
+      "code": "When you encounter a list item, call flatten_list on it and extend with that result." 
+    }
+  },
+  {
+    "id": "recursion_generate_permutations",
+    "title": "Generate Permutations",
+    "difficulty": "hard",
+    "topic": "recursion",
+    "description": "Return all permutations of the given list of distinct integers using recursion.",
+    "starter_code": "def generate_permutations(values):\n    if not values:\n        return []\n    perms = []\n    for index, value in enumerate(values):\n        remaining = values[:index] + values[index + 1:]\n        for tail in generate_permutations(remaining):\n            perms.append([value] + tail)\n    return perms",
+    "entrypoint": "generate_permutations",
+    "tests": [
+      {"args": [[1]], "expected": [[1]]},
+      {"args": [[1, 2]], "expected": [[1, 2], [2, 1]]},
+      {"args": [[1, 2, 3]], "expected": [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]}
+    ],
+    "hints": {
+      "conceptual": "The base case should return a list containing an empty permutation to build upon.",
+      "directional": "Include the empty list when there are no remaining values so recursion can assemble results.",
+      "code": "Handle the empty input by returning [[]] and build new permutations from that." 
+    }
   }
 ]

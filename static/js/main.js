@@ -1,7 +1,9 @@
 const profileStorageKey = 'skillproof-access-profile';
-const clientId = typeof crypto !== 'undefined' && crypto.randomUUID
+const sessionUserId = document.body?.dataset?.userId || null;
+const sessionUserName = document.body?.dataset?.userName || '';
+const clientId = sessionUserId || (typeof crypto !== 'undefined' && crypto.randomUUID
     ? `user_${crypto.randomUUID()}`
-    : `user_${Math.random().toString(36).slice(2, 11)}`;
+    : `user_${Math.random().toString(36).slice(2, 11)}`);
 const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
 const socket = new WebSocket(`${wsScheme}://${window.location.host}/ws/${clientId}`);
 
@@ -21,8 +23,10 @@ const sessionStatus = document.getElementById('session-status');
 const sessionStatusCard = document.getElementById('session-status-card');
 const integrityStatus = document.getElementById('integrity-status');
 const hintCount = document.getElementById('hint-count');
+const logoutButton = document.getElementById('candidate-logout');
 
 let editor;
+let editorIsCodeMirror = false;
 let timerHandle = null;
 let timerStart = null;
 let totalHints = 0;
@@ -46,9 +50,26 @@ const getProfile = () => {
 const applyProfile = () => {
     const profile = getProfile();
     if (candidateName) {
-        candidateName.textContent = profile?.name ? `Candidate · ${profile.name}` : 'Candidate · Anonymous';
+        const displayName = profile?.name || sessionUserName || 'Anonymous';
+        candidateName.textContent = `Candidate · ${displayName}`;
     }
 };
+
+applyProfile();
+
+if (logoutButton) {
+    logoutButton.addEventListener('click', async () => {
+        try {
+            await fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include',
+            });
+        } catch (error) {
+            console.warn('Failed to call logout endpoint', error);
+        }
+        window.location.href = '/access';
+    });
+}
 
 const startTimer = () => {
     timerStart = Date.now();
@@ -135,14 +156,37 @@ const currentEditorTheme = () => {
 };
 
 const initializeEditor = (startCode = '') => {
-    if (!editor) {
-        editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+    const textarea = document.getElementById('code');
+    if (!textarea) {
+        return;
+    }
+
+    if (typeof window.CodeMirror === 'undefined') {
+        if (!editor || editorIsCodeMirror) {
+            editor = {
+                getValue: () => textarea.value,
+                setValue: (value) => {
+                    textarea.value = value;
+                },
+                focus: () => textarea.focus(),
+                setOption: () => undefined,
+            };
+            editorIsCodeMirror = false;
+        }
+        editor.setValue(startCode);
+        editor.focus();
+        return;
+    }
+
+    if (!editor || !editorIsCodeMirror) {
+        editor = window.CodeMirror.fromTextArea(textarea, {
             lineNumbers: true,
             mode: 'python',
             theme: currentEditorTheme(),
             indentUnit: 4,
             autofocus: true,
         });
+        editorIsCodeMirror = true;
     } else {
         editor.setOption('theme', currentEditorTheme());
     }

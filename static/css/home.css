@@ -4,8 +4,9 @@ body.page-landing {
 
 .hero-visual {
     display: grid;
-    gap: 18px;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: clamp(20px, 1.8vw, 32px);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    justify-self: stretch;
 }
 
 .hero-visual .panel {
@@ -17,9 +18,9 @@ body.page-landing {
 }
 
 .metrics-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: clamp(18px, 1.6vw, 26px);
     margin-top: 32px;
 }
 
@@ -67,10 +68,11 @@ body.page-landing {
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 60%);
     color: #fff;
     border-radius: calc(var(--radius-lg) + 6px);
-    padding: 52px;
+    padding: clamp(44px, 4vw, 64px);
     display: grid;
-    gap: 20px;
+    gap: clamp(20px, 2vw, 32px);
     align-items: center;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
 .cta-banner p {

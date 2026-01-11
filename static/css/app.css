@@ -99,9 +99,17 @@ main {
 }
 
 .shell {
-  max-width: 1120px;
+  width: min(100%, var(--shell-max-width, 1400px));
   margin: 0 auto;
-  padding: 0 28px;
+  padding: 0 clamp(24px, 5vw, 56px);
+}
+
+.shell-wide {
+  --shell-max-width: 1580px;
+}
+
+.shell-narrow {
+  --shell-max-width: 1040px;
 }
 
 .site-header {
@@ -219,11 +227,11 @@ main {
 }
 
 .section {
-  padding: 96px 0;
+  padding: 88px 0;
 }
 
 .section.tight {
-  padding: 64px 0;
+  padding: 60px 0;
 }
 
 .section-header {
@@ -245,10 +253,16 @@ main {
 }
 
 .hero {
-  padding: 128px 0;
+  padding: 140px 0 120px;
   display: grid;
-  gap: 48px;
+  gap: clamp(36px, 3vw, 56px);
   align-items: center;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.hero-copy {
+  max-width: 640px;
+  justify-self: start;
 }
 
 .hero-copy h1 {
@@ -286,19 +300,19 @@ main {
 
 .grid {
   display: grid;
-  gap: 28px;
+  gap: clamp(24px, 2vw, 36px);
 }
 
 .grid.cols-2 {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(clamp(320px, 45%, 520px), 1fr));
 }
 
 .grid.cols-3 {
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 30%, 360px), 1fr));
 }
 
 .grid.cols-4 {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(clamp(220px, 22%, 300px), 1fr));
 }
 
 .card {

@@ -3,7 +3,8 @@ body.page-admin-dashboard {
 }
 
 .dashboard-shell {
-    padding-top: calc(var(--nav-height) + 24px);
+    --shell-max-width: 1520px;
+    padding-top: calc(var(--nav-height) + 28px);
     padding-bottom: 96px;
 }
 
@@ -94,9 +95,9 @@ body.page-admin-dashboard {
 
 .summary-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 24px;
-    margin-bottom: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: clamp(20px, 2vw, 32px);
+    margin-bottom: 44px;
 }
 
 .summary-card {
@@ -128,8 +129,8 @@ body.page-admin-dashboard {
 
 .panels-grid {
     display: grid;
-    gap: 24px;
-    grid-template-columns: 2.1fr 1fr;
+    gap: clamp(22px, 2.2vw, 36px);
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 0.9fr);
 }
 
 .live-table {

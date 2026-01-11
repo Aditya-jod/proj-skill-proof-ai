@@ -83,9 +83,13 @@ data/                  # SQLite database file lives here once created
     ```
 
 3. **Configure environment**
-    Create `.env` (already gitignored) and add your Google AI Studio key:
+    Create `.env` (already gitignored) and add your secrets:
     ```env
     GOOGLE_API_KEY="AIza_sy_your_actual_key"
+    SESSION_SECRET_KEY="replace_me_with_random_value"
+    ADMIN_USERNAME="admin"
+    ADMIN_PASSWORD="supersecret"
+    CANDIDATE_ACCESS_CODE="candidate-code"
     ```
 
 4. **Seed challenge catalog**
@@ -138,6 +142,7 @@ data/                  # SQLite database file lives here once created
 ## Troubleshooting
 
 - **`GOOGLE_API_KEY missing`**: ensure `.env` is populated and shell reloaded.
+- **Login fails immediately**: verify `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `CANDIDATE_ACCESS_CODE` match the values in `.env`.
 - **WebSocket closes immediately**: check server logs for stack traces (missing imports, collectors).
 - **Static assets 404**: confirm app started via `uvicorn app.main:app --reload` so templates/static routes resolve.
 
