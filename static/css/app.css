@@ -1,12 +1,15 @@
 :root {
   color-scheme: light;
   --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --bg-muted: rgba(99, 102, 241, 0.12);
   --bg-soft: #f5f6fb;
   --bg-surface: #ffffff;
   --bg-elevated: #ffffff;
+  --surface-900: #0f172a;
   --border-soft: rgba(15, 23, 42, 0.08);
   --text-primary: #0f172a;
   --text-secondary: rgba(15, 23, 42, 0.64);
+  --text-100: #0f172a;
   --accent: #6366f1;
   --accent-soft: rgba(99, 102, 241, 0.12);
   --accent-strong: #4f46e5;
@@ -18,15 +21,20 @@
   --radius-lg: 18px;
   --radius-md: 14px;
   --radius-sm: 10px;
+  --radius-pill: 999px;
   --nav-height: 72px;
   --transition-base: 180ms ease;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
+  --bg-muted: rgba(129, 140, 248, 0.12);
   --bg-soft: #0b1120;
   --bg-surface: #111827;
   --bg-elevated: #1f2937;
+  --surface-900: #0f172a;
+  --text-100: #f8fafc;
+  --radius-pill: 999px;
   --border-soft: rgba(148, 163, 184, 0.16);
   --text-primary: rgba(255, 255, 255, 0.94);
   --text-secondary: rgba(226, 232, 240, 0.64);
@@ -44,9 +52,6 @@
 html,
 body {
   height: 100%;
-}
-
-body {
   margin: 0;
   font-family: var(--font-sans);
   background: var(--bg-soft);
@@ -59,8 +64,6 @@ a {
   color: inherit;
   text-decoration: none;
 }
-
-a:hover,
 a:focus {
   color: var(--accent);
 }
@@ -129,9 +132,9 @@ main {
 }
 
 .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
+  background: color-mix(in srgb, var(--surface-900) 82%, transparent);
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--surface-900) 68%, transparent);
   font-weight: 600;
   font-size: 1.125rem;
   letter-spacing: -0.02em;
@@ -414,8 +417,8 @@ main {
 }
 
 .badge.muted {
-  background: rgba(148, 163, 184, 0.14);
-  color: rgba(71, 85, 105, 0.8);
+  background: color-mix(in srgb, var(--surface-900) 18%, rgba(148, 163, 184, 0.16));
+  color: color-mix(in srgb, var(--text-100) 82%, var(--text-secondary) 18%);
 }
 
 .table {
