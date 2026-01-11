@@ -1,4 +1,6 @@
+import json
 import random
+from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 from uuid import uuid4
 
@@ -7,8 +9,11 @@ from .session_state import ProblemSpec
 
 
 class ProblemRepository:
-    def __init__(self) -> None:
+    def __init__(self, data_path: Optional[Path] = None) -> None:
+        base_path = Path(__file__).resolve().parents[2] / "data" / "problems.json"
+        self._data_path = Path(data_path) if data_path else base_path
         self._store: Dict[Tuple[str, str], List[ProblemSpec]] = {}
+        self._static_store: Dict[Tuple[str, str], List[ProblemSpec]] = self._load_static()
         self._random = random.Random()
 
     def _cache_key(self, topic: str, difficulty: str) -> Tuple[str, str]:
@@ -18,11 +23,33 @@ class ProblemRepository:
         key = self._cache_key(topic, difficulty)
         return self._store.setdefault(key, [])
 
+    def _load_static(self) -> Dict[Tuple[str, str], List[ProblemSpec]]:
+        mapping: Dict[Tuple[str, str], List[ProblemSpec]] = {}
+        if not self._data_path.exists():
+            return mapping
+        try:
+            with self._data_path.open("r", encoding="utf-8") as handle:
+                raw = json.load(handle)
+        except (OSError, json.JSONDecodeError):
+            return mapping
+
+        for item in raw:
+            try:
+                problem = ProblemSpec(**item)
+            except TypeError:
+                continue
+            key = self._cache_key(problem.topic, problem.difficulty)
+            mapping.setdefault(key, []).append(problem)
+        return mapping
+
     def _generate_problem(self, topic: str, difficulty: str, *, exclude_ids: Set[str]) -> Optional[ProblemSpec]:
         attempts = 0
         while attempts < 3:
             attempts += 1
-            payload = ai_service.generate_problem_spec(topic=topic, difficulty=difficulty)
+            try:
+                payload = ai_service.generate_problem_spec(topic=topic, difficulty=difficulty)
+            except Exception:
+                continue
             if not isinstance(payload, dict):
                 continue
 
@@ -105,6 +132,12 @@ class ProblemRepository:
         bucket = self._cache(topic, difficulty)
         candidates = [problem for problem in bucket if problem.id not in exclude]
         if not candidates:
+            static_key = self._cache_key(topic, difficulty)
+            static_candidates = [problem for problem in self._static_store.get(static_key, []) if problem.id not in exclude]
+            if static_candidates:
+                selected = self._random.choice(static_candidates)
+                bucket.append(selected)
+                return selected
             generated = self._generate_problem(topic, difficulty, exclude_ids=exclude)
             if generated:
                 return generated
@@ -135,3 +168,4 @@ class ProblemRepository:
 
     def refresh(self) -> None:
         self._store.clear()
+        self._static_store = self._load_static()
