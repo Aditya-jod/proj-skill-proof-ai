@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import re
 from typing import Any, Dict, Optional
 
 import google.generativeai as genai
@@ -81,5 +83,37 @@ class AIService:
             return self._ask_model(prompt)
         except RuntimeError:
             return fallback or ""
+
+    def generate_problem_spec(self, *, topic: str, difficulty: str) -> Dict[str, Any]:
+        instructions = (
+            "You are SkillProof AI's problem author. Create a Python coding challenge. "
+            "Respond with JSON ONLY (no markdown, no commentary). The JSON object must have keys: "
+            "title, description, difficulty, topic, starter_code, entrypoint, tests, hints. "
+            "Follow these rules:\n"
+            "- difficulty must exactly match the requested difficulty.\n"
+            "- topic must exactly match the requested topic.\n"
+            "- starter_code should define the function signature with TODO comments but no solution.\n"
+            "- entrypoint must match the function name in starter_code.\n"
+            "- tests must be an array with at least three items; each item needs args (array), kwargs (object), expected (JSON-serialisable).\n"
+            "- hints must be an object with keys: conceptual, strategic, implementation. Keep each hint under 60 words.\n"
+            "- Use only JSON literals; do not include python-specific syntax like tuples.\n"
+        )
+        prompt = (
+            f"{instructions}\n"
+            f"Requested topic: {topic}.\nRequested difficulty: {difficulty}.\n"
+            "Return the JSON object now."
+        )
+
+        raw = self._ask_model(prompt)
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            match = re.search(r"\{.*\}", raw, re.DOTALL)
+            if not match:
+                raise RuntimeError("Gemini returned non-JSON problem spec") from None
+            try:
+                return json.loads(match.group(0))
+            except json.JSONDecodeError as exc:
+                raise RuntimeError("Unable to parse Gemini problem spec JSON") from exc
 
 ai_service = AIService()
