@@ -6,9 +6,10 @@
 }
 
 .hero-visual .panel {
-    background: var(--bg-elevated);
+    background: var(--card-surface);
+    color: var(--card-text);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-soft);
+    border: 1px solid color-mix(in srgb, rgba(255, 255, 255, 0.6) 50%, transparent);
     padding: clamp(28px, 2.4vw, 36px);
     box-shadow: var(--shadow-sm);
     display: grid;
@@ -34,8 +35,9 @@
     min-width: 160px;
     padding: clamp(22px, 2vw, 28px);
     border-radius: var(--radius-md);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-soft);
+    background: var(--card-surface);
+    color: var(--card-text);
+    border: 1px solid color-mix(in srgb, rgba(255, 255, 255, 0.6) 50%, transparent);
     box-shadow: var(--shadow-sm);
     display: grid;
     gap: var(--space-2xs);
@@ -43,6 +45,7 @@
 
 .metrics-strip .metric span {
     margin: 0;
+    color: var(--card-text-muted);
 }
 
 .metrics-strip .metric strong {
