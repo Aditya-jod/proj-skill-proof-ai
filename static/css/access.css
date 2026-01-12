@@ -3,7 +3,8 @@ body.page-access {
 }
 
 .auth-shell {
-  min-height: 100vh;
+  min-height: calc(100vh - var(--nav-height));
+  margin-top: var(--nav-height);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,6 +121,22 @@ body.page-access {
   flex: 1;
 }
 
+.form-card .button {
+  box-shadow: none;
+}
+
+.form-card .button.button-muted {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(248, 250, 252, 0.9);
+  border-color: transparent;
+}
+
+.form-card .button.button-muted:hover,
+.form-card .button.button-muted:focus-visible {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
 .notice {
   font-size: 0.82rem;
   color: color-mix(in srgb, var(--text-100) 62%, transparent);
@@ -139,5 +156,10 @@ form[data-auth-mode="login"] [data-auth-copy="register"] {
   .actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .auth-shell {
+    margin-top: calc(var(--nav-height) + 12px);
+    min-height: calc(100vh - var(--nav-height) - 12px);
   }
 }
