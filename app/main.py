@@ -48,6 +48,27 @@ async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:  
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
+@app.get("/platform", response_class=HTMLResponse)
+async def read_platform(request: Request):
+    return templates.TemplateResponse("platform.html", {"request": request})
+
+
+@app.get("/features", response_class=HTMLResponse)
+async def read_features(request: Request):
+    return templates.TemplateResponse("features.html", {"request": request})
+
+
+@app.get("/use-cases", response_class=HTMLResponse)
+async def read_use_cases(request: Request):
+    return templates.TemplateResponse("use_cases.html", {"request": request})
+
+
+@app.get("/about", response_class=HTMLResponse)
+async def read_about(request: Request):
+    return templates.TemplateResponse("about.html", {"request": request})
+
+
 @app.get("/access", response_class=HTMLResponse)
 async def read_access(request: Request):
     user = auth_service.current_user(request)
