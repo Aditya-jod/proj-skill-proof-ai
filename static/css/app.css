@@ -68,7 +68,10 @@ body {
   height: 100%;
   margin: 0;
   font-family: var(--font-sans);
-  background: var(--bg-soft);
+  background:
+    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 56%),
+    radial-gradient(circle at bottom left, color-mix(in srgb, var(--accent-soft) 20%, transparent) 0%, transparent 58%),
+    var(--bg-soft);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   line-height: 1.7;
@@ -80,11 +83,6 @@ body {
 
 body.page-access {
   padding-top: var(--nav-height);
-}
-
-body.page-landing {
-  background: radial-gradient(circle at top 20% right 12%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 60%),
-    radial-gradient(circle at bottom left, color-mix(in srgb, var(--accent-soft) 18%, transparent) 0%, transparent 58%), var(--bg-soft);
 }
 
 p {
