@@ -36,6 +36,21 @@ async def register(payload: RegisterRequest, request: Request) -> dict:
     return _build_response(session_user)
 
 
+@router.post("/admin/register")
+async def register_admin(payload: RegisterRequest, request: Request) -> dict:
+    try:
+        user = auth_service.register_user(
+            name=payload.name,
+            email=payload.email,
+            password=payload.password,
+            role="admin",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    session_user = auth_service.login_user(request, user)
+    return _build_response(session_user)
+
+
 @router.post("/login")
 async def login(payload: LoginRequest, request: Request) -> dict:
     user = auth_service.authenticate_user(payload.email, payload.password)
