@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserBase(BaseModel):
@@ -21,6 +21,4 @@ class UserPublic(BaseModel):
     email: EmailStr
     role: str
 
-    class Config:
-        from_attributes = True
-*** End Patch
+    model_config = ConfigDict(from_attributes=True)
