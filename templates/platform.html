@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SkillProof AI · Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div id="navbar"></div>
+
+    <main>
+        <section class="hero" aria-labelledby="platform-hero-title">
+            <div class="container hero-grid">
+                <div class="hero-headline">
+                    <span class="badge">Platform overview</span>
+                    <h1 id="platform-hero-title">Agentic orchestration built for high-stakes assessments.</h1>
+                    <p class="hero-subtitle">SkillProof AI coordinates specialized agents—evaluation, hints, learning diagnosis, and integrity—to deliver adaptive, trustworthy coding experiences.</p>
+                    <div class="hero-cta">
+                        <a class="btn primary" href="/session">Start a live session</a>
+                        <a class="btn secondary" href="/features">Explore capabilities</a>
+                    </div>
+                </div>
+                <div class="highlight-panel" aria-hidden="true">
+                    <h2>Signals the platform watches</h2>
+                    <div class="feature-strip">
+                        <div class="item"><span class="icon">1</span><span>Code execution telemetry with live unit test outcomes.</span></div>
+                        <div class="item"><span class="icon">2</span><span>Learning cues from hint requests, errors, and retries.</span></div>
+                        <div class="item"><span class="icon">3</span><span>Integrity events including window focus, inactivity, and paste.</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" aria-labelledby="architecture-title">
+            <div class="container section-heading">
+                <h2 id="architecture-title">How the orchestration fabric works</h2>
+                <p>Every session streams through a decision bus so agents collaborate instantly and administrators see what matters.</p>
+            </div>
+            <div class="container grid cols-3">
+                <article class="card">
+                    <h3>Session manager</h3>
+                    <p>Creates the workspace, authenticates candidates, and manages the FastAPI WebSocket bridge for real-time updates.</p>
+                </article>
+                <article class="card">
+                    <h3>Message bus</h3>
+                    <p>All agent messages flow through a central bus, ensuring consistent state snapshots and traceable decision logs.</p>
+                </article>
+                <article class="card">
+                    <h3>Adaptive policies</h3>
+                    <p>Policies tune difficulty, schedule hints, and trigger integrity escalation based on telemetry emitted by every agent.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section tight" aria-labelledby="agents-title">
+            <div class="container section-heading">
+                <h2 id="agents-title">Meet the SkillProof agent team</h2>
+                <p>Each agent has a precise job to keep candidates in flow while safeguarding the assessment.</p>
+            </div>
+            <div class="container grid cols-4">
+                <article class="card">
+                    <h3>Orchestrator</h3>
+                    <p>Routes telemetry, updates session state, and coordinates responses from the rest of the agent network.</p>
+                </article>
+                <article class="card">
+                    <h3>Evaluation</h3>
+                    <p>Runs compiled code, executes test suites, and publishes rubric-aligned scoring with rationale.</p>
+                </article>
+                <article class="card">
+                    <h3>Learning diagnosis</h3>
+                    <p>Detects conceptual gaps, recommends new prompts, and justifies each adaptive difficulty change.</p>
+                </article>
+                <article class="card">
+                    <h3>Integrity</h3>
+                    <p>Monitors focus changes, suspicious paste behavior, and inactivity with escalating review paths.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" aria-labelledby="stack-title">
+            <div class="container section-heading">
+                <h2 id="stack-title">Modern architecture with enterprise guardrails</h2>
+                <p>Composable services make it simple to integrate SkillProof AI into your learning platform, HR stack, or LMS.</p>
+            </div>
+            <div class="container grid cols-2">
+                <article class="card">
+                    <h3>FastAPI backbone</h3>
+                    <p>Async-first API with JWT-secured endpoints, Postgres persistence, and websocket streaming.</p>
+                </article>
+                <article class="card">
+                    <h3>Observability ready</h3>
+                    <p>Structured logging and telemetry events enable integration with SIEM and analytics pipelines.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script type="module" src="/static/js/navbar.js"></script>
+    <script type="module" src="/static/js/footer.js"></script>
+</body>
+</html>

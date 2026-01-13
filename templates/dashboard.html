@@ -1,121 +1,96 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SkillProof AI – Admin Dashboard</title>
+    <title>SkillProof AI · Admin Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/app.css">
-    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
-<body class="page-admin-dashboard">
-    <a href="#main" class="skip-link">Skip to content</a>
-    <header class="site-header" role="banner">
-        <div class="shell shell-wide">
-            <a class="brand" href="/">
-                <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
-                    <path d="M21.8 7.2a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8l-14 14a2 2 0 0 1-2.8 0l-8-8a2 2 0 0 1 0-2.8l2.2-2.2a2 2 0 0 1 2.8 0l5.4 5.4z"></path>
-                </svg>
-                SkillProof AI
-            </a>
-            <button class="mobile-nav-toggle" type="button" aria-label="Toggle navigation" data-nav-toggle>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"></path>
-                </svg>
-            </button>
-            <nav class="primary-nav" data-nav aria-label="Primary">
-                <a href="/">Overview</a>
-                <a href="/access">Access</a>
-                <a href="/session">Candidate</a>
-            </nav>
-            <div class="nav-actions">
-                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                        <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.95 6.95-1.414-1.414M7.464 7.464 6.05 6.05m12.728 0-1.414 1.414M7.464 16.536 6.05 17.95" stroke-linecap="round"></path>
-                    </svg>
-                </button>
-                <a class="button button-muted" href="/session">Candidate view</a>
-                <button class="button" type="button" id="admin-logout">Sign out</button>
-            </div>
-        </div>
-    </header>
+<body>
+    <div id="navbar"></div>
 
-    <main id="main" class="shell shell-wide dashboard-shell" role="main">
-        <div class="dashboard-header">
-            <div>
-                <span class="badge muted">Operations</span>
-                <h1>Live assessment control</h1>
-            </div>
-            <div class="live-status" id="live-status">
-                <span class="pulse" aria-hidden="true"></span>
-                <span id="connection-status">Connecting…</span>
-            </div>
-        </div>
-
-        <section class="summary-grid" aria-label="Performance overview">
-            <article class="summary-card">
-                <span>Active users</span>
-                <strong id="active-users-card">0</strong>
-                <small>Sessions connected</small>
-            </article>
-            <article class="summary-card">
-                <span>Integrity flags</span>
-                <strong id="integrity-flags-card">0</strong>
-                <small>Escalations today</small>
-            </article>
-            <article class="summary-card">
-                <span>Problems solved</span>
-                <strong id="solved-count-card">0</strong>
-                <small>Completed submissions</small>
-            </article>
-        </section>
-
-        <div class="panels-grid">
-            <section class="live-table" aria-label="Live sessions">
-                <header>
-                    <h2>Active sessions</h2>
-                    <span class="subdued">Ordered by most recent activity</span>
+    <main>
+        <section class="dashboard" aria-labelledby="dashboard-title">
+            <div class="container dashboard-grid">
+                <header class="dashboard-header">
+                    <div>
+                        <span class="badge">Operations</span>
+                        <h1 id="dashboard-title">Live assessment control center</h1>
+                    </div>
+                    <div class="live-status" id="live-status">
+                        <span class="pulse" aria-hidden="true"></span>
+                        <span id="connection-status">Connecting…</span>
+                    </div>
                 </header>
-                <div class="table-wrapper">
-                    <table class="table" role="grid">
-                        <thead>
-                            <tr>
-                                <th scope="col">User</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Event</th>
-                                <th scope="col">Last decision</th>
-                                <th scope="col">Latest feedback</th>
-                                <th scope="col">Flags</th>
-                                <th scope="col">Last update</th>
-                            </tr>
-                        </thead>
-                        <tbody id="session-table-body"></tbody>
-                    </table>
-                </div>
-            </section>
 
-            <aside class="activity-panel" aria-label="Session activity">
-                <header>Session log</header>
-                <div class="activity-feed" id="activity-feed">
-                    <p class="subdued">Waiting for session activity…</p>
+                <div class="dashboard-metrics" aria-label="Performance overview">
+                    <article class="metric-card">
+                        <span>Active users</span>
+                        <strong id="active-users-card">0</strong>
+                        <small>Sessions connected</small>
+                    </article>
+                    <article class="metric-card">
+                        <span>Integrity flags</span>
+                        <strong id="integrity-flags-card">0</strong>
+                        <small>Escalations today</small>
+                    </article>
+                    <article class="metric-card">
+                        <span>Problems solved</span>
+                        <strong id="solved-count-card">0</strong>
+                        <small>Completed submissions</small>
+                    </article>
+                    <article class="metric-card metric-action">
+                        <span>Admin actions</span>
+                        <button class="btn secondary" type="button" id="admin-logout">Sign out</button>
+                        <a class="btn ghost" href="/session">Switch to candidate view</a>
+                    </article>
                 </div>
-            </aside>
-        </div>
+
+                <div class="dashboard-panels">
+                    <section class="panel" aria-label="Live sessions">
+                        <header class="panel-header">
+                            <h2>Active sessions</h2>
+                            <span class="panel-subtitle">Sorted by recent activity</span>
+                        </header>
+                        <div class="table-wrapper">
+                            <table class="data-table" role="grid">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">User</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Event</th>
+                                        <th scope="col">Last decision</th>
+                                        <th scope="col">Latest feedback</th>
+                                        <th scope="col">Flags</th>
+                                        <th scope="col">Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="session-table-body"></tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <aside class="panel" aria-label="Session activity">
+                        <header class="panel-header">
+                            <h2>Session log</h2>
+                            <span class="panel-subtitle">Real-time feed</span>
+                        </header>
+                        <div class="activity-feed" id="activity-feed">
+                            <p class="panel-subtitle">Waiting for session activity…</p>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <footer class="footer" role="contentinfo">
-        <div class="shell shell-wide">
-            <span class="subdued">© 2026 SkillProof AI</span>
-            <div class="footer-nav">
-                <a href="/">Overview</a>
-                <a href="/session">Candidate</a>
-            </div>
-        </div>
-    </footer>
+    <div id="footer"></div>
 
-    <script src="/static/js/site.js" defer></script>
-    <script src="/static/js/dashboard.js" defer></script>
+    <script type="module" src="/static/js/navbar.js"></script>
+    <script type="module" src="/static/js/footer.js"></script>
+    <script type="module" src="/static/js/dashboard.js"></script>
 </body>
 </html>

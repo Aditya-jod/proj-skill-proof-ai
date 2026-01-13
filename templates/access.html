@@ -1,95 +1,63 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Access SkillProof AI</title>
+    <title>SkillProof AI · Candidate Access</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/app.css">
-    <link rel="stylesheet" href="/static/css/access.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
-<body class="page-access">
-    <a href="#main" class="skip-link">Skip to content</a>
-    <header class="site-header" role="banner">
-        <div class="shell shell-wide">
-            <a class="brand" href="/">
-                <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
-                    <path d="M21.8 7.2a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8l-14 14a2 2 0 0 1-2.8 0l-8-8a2 2 0 0 1 0-2.8l2.2-2.2a2 2 0 0 1 2.8 0l5.4 5.4z"></path>
-                </svg>
-                SkillProof AI
-            </a>
-            <button class="mobile-nav-toggle" type="button" aria-label="Toggle navigation" data-nav-toggle>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"></path>
-                </svg>
-            </button>
-            <nav class="primary-nav" data-nav aria-label="Primary">
-                <a href="/">Overview</a>
-                <a href="/access">Candidate</a>
-                <a href="/admin/login">Admin</a>
-            </nav>
-            <div class="nav-actions">
-                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                        <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.95 6.95-1.414-1.414M7.464 7.464 6.05 6.05m12.728 0-1.414 1.414M7.464 16.536 6.05 17.95" stroke-linecap="round"></path>
-                    </svg>
-                </button>
-                <a class="button" href="/session">Start Assessment</a>
-            </div>
-        </div>
-    </header>
+<body>
+    <div id="navbar"></div>
 
-    <main id="main" class="auth-shell" role="main">
-        <section class="form-card" aria-labelledby="access-heading">
-            <header>
-                <span class="badge muted">Secure access</span>
-                <h1 id="access-heading">Enter your details to begin</h1>
-                <p>We'll personalize your session and keep stakeholders informed. No passwords, no friction—just essential context.</p>
-            </header>
-            <div class="mode-toggle" data-auth-mode-toggle>
-                <button type="button" class="toggle selected" data-mode="login">Sign in</button>
-                <button type="button" class="toggle" data-mode="register">Create account</button>
-            </div>
+    <main>
+        <section class="section" aria-labelledby="access-heading">
+            <div class="container">
+                <article class="form-card">
+                    <header>
+                        <span class="badge">Secure access</span>
+                        <h1 id="access-heading">Sign in or create your SkillProof workspace.</h1>
+                        <p>We personalize each session and keep your progress synced with the agents supporting you.</p>
+                    </header>
 
-            <form id="access-form" class="form-grid" autocomplete="on" novalidate data-auth-mode="login">
-                <div class="field" data-auth-section="register">
-                    <label for="auth-name">Full name</label>
-                    <input id="auth-name" name="name" type="text" inputmode="text" placeholder="Alex Johnson" autocomplete="name">
-                </div>
-                <div class="field">
-                    <label for="auth-email">Email address</label>
-                    <input id="auth-email" name="email" type="email" inputmode="email" placeholder="alex@team.com" autocomplete="email" required>
-                    <p class="helper" data-auth-copy="register">We use your email to keep track of session progress.</p>
-                </div>
-                <div class="field">
-                    <label for="auth-password">Password</label>
-                    <input id="auth-password" name="password" type="password" placeholder="Your password" minlength="8" autocomplete="current-password" required>
-                    <p class="helper" data-auth-copy="register">Use at least 8 characters with a mix of letters and numbers.</p>
-                </div>
-                <p id="auth-error" class="error" role="alert" hidden></p>
-                <div class="actions">
-                    <a class="button button-muted" href="/">Back</a>
-                    <button class="button" type="submit" data-auth-submit>Continue to dashboard</button>
-                </div>
-            </form>
-            <p class="notice">By creating an account you agree to SkillProof AI retaining your details for this session. Your information never leaves your device without consent.</p>
+                    <div class="form-toggle" data-auth-mode-toggle>
+                        <button type="button" data-mode="login" data-active="true">Sign in</button>
+                        <button type="button" data-mode="register">Create account</button>
+                    </div>
+
+                    <form id="access-form" class="form-grid" autocomplete="on" novalidate data-auth-mode="login">
+                        <div class="form-group" data-auth-section="register">
+                            <label for="auth-name">Full name</label>
+                            <input id="auth-name" name="name" type="text" inputmode="text" placeholder="Alex Johnson" autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="auth-email">Email address</label>
+                            <input id="auth-email" name="email" type="email" inputmode="email" placeholder="alex@team.com" autocomplete="email" required>
+                            <p class="helper" data-auth-copy="register">We use your email to keep your session synced.</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="auth-password">Password</label>
+                            <input id="auth-password" name="password" type="password" placeholder="Your password" minlength="8" autocomplete="current-password" required>
+                            <p class="helper" data-auth-copy="register">Use at least eight characters mixing letters and numbers.</p>
+                        </div>
+                        <p id="auth-error" class="form-error" role="alert" hidden></p>
+                        <div class="form-actions">
+                            <a class="btn ghost" href="/">Back</a>
+                            <button class="btn primary" type="submit" data-auth-submit>Continue</button>
+                        </div>
+                    </form>
+                    <p class="form-note">By continuing you consent to SkillProof AI storing only the data required for this assessment. Your information stays encrypted at rest.</p>
+                </article>
+            </div>
         </section>
     </main>
 
-    <footer class="footer" role="contentinfo">
-        <div class="shell shell-wide">
-            <span class="subdued">© 2026 SkillProof AI</span>
-            <div class="footer-nav">
-                <a href="/">Overview</a>
-                <a href="/session">Candidate</a>
-                <a href="/dashboard">Admin</a>
-            </div>
-        </div>
-    </footer>
+    <div id="footer"></div>
 
-    <script src="/static/js/site.js" defer></script>
-    <script src="/static/js/access.js" defer></script>
+    <script type="module" src="/static/js/navbar.js"></script>
+    <script type="module" src="/static/js/footer.js"></script>
+    <script type="module" src="/static/js/auth.js"></script>
 </body>
 </html>
