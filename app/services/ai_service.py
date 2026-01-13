@@ -4,7 +4,7 @@ import json
 import re
 from typing import Any, Dict, Optional
 
-import google.generativeai as genai
+from google import genai
 
 from ..config import settings
 
@@ -16,9 +16,9 @@ class AIService:
         if not settings.GOOGLE_API_KEY:
             raise ValueError("GOOGLE_API_KEY missing. Add it to your .env file.")
 
-        genai.configure(api_key=settings.GOOGLE_API_KEY)
-        self._model = genai.GenerativeModel("gemini-1.5-pro")
-        self._generation_config = genai.types.GenerationConfig(
+        self._client = genai.Client(api_key=settings.GOOGLE_API_KEY)
+        self._model_name = "gemini-1.5-pro"
+        self._generation_config = genai.types.GenerateContentConfig(
             temperature=0.4,
             top_p=0.95,
             top_k=40,
@@ -27,9 +27,10 @@ class AIService:
 
     def _ask_model(self, prompt: str) -> str:
         try:
-            response = self._model.generate_content(
-                prompt,
-                generation_config=self._generation_config,
+            response = self._client.models.generate_content(
+                model=self._model_name,
+                contents=prompt,
+                config=self._generation_config,
             )
         except Exception as exc:  # pragma: no cover - network errors
             raise RuntimeError(f"Gemini request failed: {exc}") from exc
