@@ -155,25 +155,35 @@ Full repository layout (excluding virtual environment, git metadata, and `__pyca
 │       └── session_state.py
 ├── data/
 │   └── problems.json
+├── Documents/
+│   └── ... (marketing copy, assets, etc.)
 ├── static/
 │   ├── css/
 │   │   ├── access.css
 │   │   ├── app.css
 │   │   ├── dashboard.css
 │   │   ├── home.css
-│   │   └── main.css
+│   │   ├── main.css
+│   │   └── styles.css
 │   └── js/
 │       ├── access.js
 │       ├── admin-login.js
+│       ├── auth.js
 │       ├── dashboard.js
+│       ├── footer.js
 │       ├── main.js
+│       ├── navbar.js
 │       └── site.js
 ├── templates/
+│   ├── about.html
 │   ├── access.html
 │   ├── admin_login.html
 │   ├── dashboard.html
+│   ├── features.html
 │   ├── index.html
-│   └── session.html
+│   ├── platform.html
+│   ├── session.html
+│   └── use_cases.html
 ├── tmp/
 │   └── (empty or transient files)
 └── .venv/ (virtual environment, excluded from tree)
