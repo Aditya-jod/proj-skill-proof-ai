@@ -15,17 +15,17 @@ body.page-access .notice {
 }
 
 body.page-access .field input {
-  background: color-mix(in srgb, #1e225f 70%, transparent);
-  border: 1px solid color-mix(in srgb, rgba(255, 255, 255, 0.6) 45%, transparent);
-  color: var(--card-text);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  color: var(--text-primary);
 }
 
 body.page-access .field input::placeholder {
-  color: color-mix(in srgb, var(--card-text) 60%, transparent);
+  color: var(--text-secondary);
 }
 
 body.page-access .field input:focus {
-  background: color-mix(in srgb, #262b70 80%, transparent);
+  background: var(--bg-surface);
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
 }
@@ -54,7 +54,7 @@ body.page-access .field input:focus {
 .mode-toggle {
   display: inline-flex;
   align-self: center;
-  background: color-mix(in srgb, var(--card-text) 18%, transparent);
+  background: var(--bg-surface);
   border-radius: var(--radius-pill);
   padding: 4px;
   gap: 6px;
@@ -63,7 +63,7 @@ body.page-access .field input:focus {
 .mode-toggle .toggle {
   border: none;
   background: transparent;
-  color: var(--card-text-muted);
+  color: var(--text-secondary);
   font-weight: 600;
   padding: 8px 20px;
   border-radius: var(--radius-pill);
@@ -72,12 +72,12 @@ body.page-access .field input:focus {
 }
 
 .mode-toggle .toggle:hover {
-  color: var(--card-text);
+  color: var(--text-primary);
 }
 
 .mode-toggle .toggle.selected {
-  background: color-mix(in srgb, #1e225f 76%, transparent);
-  color: var(--card-text);
+  background: var(--accent);
+  color: var(--white);
   box-shadow: var(--shadow-sm);
 }
 
@@ -112,20 +112,20 @@ body.page-access .field input:focus {
 .field input {
   padding: 14px 16px;
   border-radius: var(--radius-sm);
-  border: 1px solid color-mix(in srgb, rgba(255, 255, 255, 0.6) 45%, transparent);
-  background: color-mix(in srgb, #1e225f 70%, transparent);
-  color: var(--card-text);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-surface);
+  color: var(--text-primary);
   transition: border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
 }
 
 .field input::placeholder {
-  color: color-mix(in srgb, var(--card-text) 60%, transparent);
+  color: var(--text-secondary);
 }
 
 .field input:focus {
   outline: none;
   border-color: var(--accent);
-  background: color-mix(in srgb, #262b70 80%, transparent);
+  background: var(--bg-surface);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
@@ -147,18 +147,18 @@ body.page-access .field input:focus {
   gap: 16px;
 }
 
-.actions .button {
+.actions .btn {
   flex: 1;
 }
 
-.form-card .button.button-muted {
+.form-card .btn.ghost {
   background: transparent;
   color: var(--card-text-muted);
   border: 1px solid color-mix(in srgb, rgba(255, 255, 255, 0.4) 50%, transparent);
 }
 
-.form-card .button.button-muted:hover,
-.form-card .button.button-muted:focus-visible {
+.form-card .btn.ghost:hover,
+.form-card .btn.ghost:focus-visible {
   color: var(--card-text);
   border-color: var(--accent);
 }

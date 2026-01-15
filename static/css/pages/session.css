@@ -6,6 +6,172 @@ body.page-user-dashboard {
     background: var(--bg-soft);
 }
 
+.session-card {
+    background: var(--bg-elevated);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+}
+
+.session-card-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    display: grid;
+    gap: 12px;
+}
+
+.session-card-header h2,
+.session-card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+}
+
+.session-card-body {
+    padding: 24px 28px;
+    display: grid;
+    gap: 24px;
+}
+
+.session-card-footer {
+    padding: 20px 28px;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.session-option {
+    display: grid;
+    gap: 10px;
+    padding: 18px 20px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.session-option h3 {
+    margin: 0;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+}
+
+.session-option select {
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-soft);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.session-option select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.session-editor {
+    padding: 0 28px 24px;
+}
+
+.session-editor textarea {
+    width: 100%;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    min-height: 360px;
+    padding: 16px;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.95rem;
+}
+
+.session-sidebar {
+    display: grid;
+    gap: 22px;
+}
+
+.session-insight {
+    background: var(--bg-elevated);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-soft);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.session-insight h3 {
+    margin: 0 0 14px;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+}
+
+.session-insight dl {
+    margin: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.session-insight dt {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.session-insight dd {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.session-panel {
+    margin-top: 32px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.session-panel-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.session-panel-subtitle {
+    font-size: 0.8rem;
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--text-secondary);
+}
+
+.session-banner {
+    margin: 0;
+    padding: 16px 18px;
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--accent-soft) 40%, transparent);
+    color: var(--accent);
+    font-size: 0.9rem;
+}
+
+.session-grid.alt {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: clamp(20px, 2vw, 32px);
+    margin-top: 28px;
+}
+
 .session-shell {
     --shell-max-width: 1500px;
     padding-top: calc(var(--nav-height) + 32px);
@@ -92,43 +258,8 @@ body.page-user-dashboard {
     align-items: flex-start;
 }
 
-.workspace-card {
-    background: var(--bg-elevated);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-soft);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
-}
-
-.workspace-header {
-    padding: 24px 28px 18px;
-    border-bottom: 1px solid var(--border-soft);
-}
-
-.workspace-header h2 {
-    margin: 0;
-    font-size: 1.24rem;
-    letter-spacing: -0.01em;
-}
-
-.workspace-header p {
-    margin: 6px 0 0;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-}
-
-.workspace-editor {
-    padding: 0 28px 24px;
-}
-
-.workspace-controls {
-    padding: 18px 28px;
-    border-top: 1px solid var(--border-soft);
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+#setup-container .session-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .CodeMirror {
@@ -137,30 +268,6 @@ body.page-user-dashboard {
     height: var(--editor-height);
     font-size: 0.95rem;
     background: var(--bg-surface);
-}
-
-.output-panel {
-    margin-top: 32px;
-    background: var(--bg-elevated);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-soft);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-}
-
-.output-panel header {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border-soft);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.output-panel header h3 {
-    margin: 0;
-    font-size: 1rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
 }
 
 #output {
@@ -244,71 +351,6 @@ body.page-user-dashboard {
     font-size: 0.78rem;
 }
 
-.explanation-banner {
-    margin: 24px;
-    margin-bottom: 0;
-    padding: 16px 18px;
-    border-radius: var(--radius-sm);
-    background: color-mix(in srgb, var(--accent-soft) 40%, transparent);
-    color: var(--accent);
-    font-size: 0.92rem;
-}
-
-.sidebar {
-    display: grid;
-    gap: 22px;
-}
-
-.sidebar-card {
-    background: var(--bg-elevated);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-soft);
-    padding: 24px;
-    box-shadow: var(--shadow-sm);
-}
-
-.sidebar-card h3 {
-    margin: 0 0 14px;
-    font-size: 1rem;
-    letter-spacing: -0.01em;
-}
-
-.sidebar-card select {
-    width: 100%;
-    padding: 12px 14px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-soft);
-    background: var(--bg-surface);
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    transition: border-color var(--transition-base), box-shadow var(--transition-base);
-}
-
-.sidebar-card select:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
-}
-
-.sidebar-card dl {
-    margin: 0;
-    display: grid;
-    gap: 10px;
-}
-
-.sidebar-card dt {
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-}
-
-.sidebar-card dd {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
 .integrity-status {
     display: inline-flex;
     align-items: center;
@@ -350,7 +392,7 @@ body.page-user-dashboard {
         grid-template-columns: 1fr;
     }
 
-    .sidebar {
+    .session-sidebar {
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     }
 }
@@ -371,11 +413,11 @@ body.page-user-dashboard {
         width: 100%;
     }
 
-    .workspace-card {
-        grid-template-rows: auto minmax(0, 1fr) auto;
+    .session-card {
+        grid-template-rows: auto 1fr auto;
     }
 
-    .workspace-controls {
+    .session-card-footer {
         flex-direction: column;
         align-items: stretch;
     }
