@@ -1,0 +1,32 @@
+{% set nav_links = [
+    {"label": "Overview", "href": "/"},
+    {"label": "Platform", "href": "/platform"},
+    {"label": "Features", "href": "/features"},
+    {"label": "Use Cases", "href": "/use-cases"},
+    {"label": "About", "href": "/about"}
+] %}
+<nav class="navbar" data-nav data-solid="false">
+    <div class="container nav-inner">
+        <div class="nav-left">
+            <a class="brand" href="/" aria-label="SkillProof AI home">
+                <span class="brand-mark" aria-hidden="true">SP</span>
+                <span class="brand-name">SkillProof AI</span>
+            </a>
+        </div>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-nav-toggle>
+            <span class="sr-only">Toggle navigation</span>
+            <span aria-hidden="true">Menu</span>
+        </button>
+        <div class="nav-links" id="primary-nav" role="navigation" aria-label="Primary">
+            {% set current_path = request.url.path.rstrip('/') or '/' %}
+            {% for item in nav_links %}
+                {% set normalised = item.href.rstrip('/') or '/' %}
+                <a href="{{ item.href }}" data-nav-link data-active="{{ 'true' if normalised == current_path else 'false' }}">{{ item.label }}</a>
+            {% endfor %}
+        </div>
+        <div class="nav-actions" data-nav-actions>
+            <a class="btn secondary" href="/access">Candidate Login</a>
+            <a class="btn primary" href="/admin/login">Admin Login</a>
+        </div>
+    </div>
+</nav>
