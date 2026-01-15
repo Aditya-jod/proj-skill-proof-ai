@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Response
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -46,27 +46,27 @@ async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:  
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("public/index.html", {"request": request})
 
 
 @app.get("/platform", response_class=HTMLResponse)
 async def read_platform(request: Request):
-    return templates.TemplateResponse("platform.html", {"request": request})
+    return templates.TemplateResponse("public/platform.html", {"request": request})
 
 
 @app.get("/features", response_class=HTMLResponse)
 async def read_features(request: Request):
-    return templates.TemplateResponse("features.html", {"request": request})
+    return templates.TemplateResponse("public/features.html", {"request": request})
 
 
 @app.get("/use-cases", response_class=HTMLResponse)
 async def read_use_cases(request: Request):
-    return templates.TemplateResponse("use_cases.html", {"request": request})
+    return templates.TemplateResponse("public/use_cases.html", {"request": request})
 
 
 @app.get("/about", response_class=HTMLResponse)
 async def read_about(request: Request):
-    return templates.TemplateResponse("about.html", {"request": request})
+    return templates.TemplateResponse("public/about.html", {"request": request})
 
 
 @app.get("/access", response_class=HTMLResponse)
@@ -74,28 +74,42 @@ async def read_access(request: Request):
     user = auth_service.current_user(request)
     if user and user.get("role") == "candidate":
         return RedirectResponse(url="/session", status_code=303)
-    return templates.TemplateResponse("access.html", {"request": request})
+    return templates.TemplateResponse("auth/login.html", {"request": request})
 
 @app.get("/session", response_class=HTMLResponse)
 async def read_session(request: Request):
     user = auth_service.current_user(request)
     if not user or user.get("role") != "candidate":
         return RedirectResponse(url="/access", status_code=303)
-    return templates.TemplateResponse("session.html", {"request": request, "user": user})
+    return templates.TemplateResponse("session/index.html", {"request": request, "user": user})
 
 @app.get("/admin/login", response_class=HTMLResponse)
 async def read_admin_login(request: Request):
     user = auth_service.current_user(request)
     if user and user.get("role") == "admin":
         return RedirectResponse(url="/dashboard", status_code=303)
-    return templates.TemplateResponse("admin_login.html", {"request": request})
+    return templates.TemplateResponse("auth/admin.html", {"request": request})
+
+
+@app.get("/admin/register", response_class=HTMLResponse)
+async def read_admin_register(request: Request):
+    user = auth_service.current_user(request)
+    if user and user.get("role") == "admin":
+        return RedirectResponse(url="/dashboard", status_code=303)
+    return templates.TemplateResponse("auth/register.html", {"request": request})
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def read_dashboard(request: Request):
     user = auth_service.current_user(request)
     if not user or user.get("role") != "admin":
         return RedirectResponse(url="/admin/login", status_code=303)
-    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user})
+    return templates.TemplateResponse("dashboard/index.html", {"request": request, "user": user})
+
+
+@app.get("/.well-known/appspecific/com.chrome.devtools.json", include_in_schema=False)
+async def chrome_devtools_well_known() -> Response:
+    """Return a minimal payload so Chrome DevTools stops logging 404s."""
+    return Response(status_code=204)
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
