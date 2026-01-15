@@ -1,0 +1,146 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}SkillProof AI · Candidate Workspace{% endblock %}
+
+{% block body_class %}page-session{% endblock %}
+
+{% block body_attributes %} data-user-id="{{ user.user_id | e }}" data-user-name="{{ user.name | e }}"{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', path='css/pages/session.css') }}">
+{% endblock %}
+
+{% block head_extra %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/neo.min.css" integrity="sha512-n6DpN0Uo6L9yIU4MeX5hhnCX6NejvEBxXQ2GNmBl8febWyt1Fdh7C4EiDQvBeGtFOaOIBxZAf/VQZjjUvs04ng==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/material-darker.min.css" integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g==" crossorigin="anonymous" referrerpolicy="no-referrer">
+{% endblock %}
+
+{% block content %}
+<section id="setup-container" class="container-transition fade-in-down" aria-labelledby="setup-heading">
+    <div class="container">
+        <div class="session-card" role="form">
+            <header class="session-card-header">
+                <span class="badge">Session setup</span>
+                <h2 id="setup-heading">Configure your assessment</h2>
+                <p>Select your starting parameters. You can escalate difficulty as you progress.</p>
+            </header>
+            <div class="session-card-body">
+                <div class="session-grid">
+                    <label class="session-option" for="difficulty">
+                        <h3>Difficulty</h3>
+                        <select id="difficulty">
+                            <option value="easy">Foundational</option>
+                            <option value="medium">Intermediate</option>
+                            <option value="hard">Advanced</option>
+                        </select>
+                    </label>
+                    <label class="session-option" for="language">
+                        <h3>Language</h3>
+                        <select id="language">
+                            <option value="python">Python</option>
+                            <option value="javascript" disabled>JavaScript (soon)</option>
+                        </select>
+                    </label>
+                    <label class="session-option" for="topic">
+                        <h3>Topic focus</h3>
+                        <select id="topic">
+                            <option value="recursion">Recursion</option>
+                            <option value="arrays" disabled>Arrays (soon)</option>
+                            <option value="data_structures" disabled>Data Structures (soon)</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <div class="session-card-footer">
+                <button class="btn primary" type="button" onclick="startSession()">Start assessment</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="coding-container" class="container-transition fade-out-up" aria-live="polite" hidden>
+    <div class="container">
+        <div class="session-header">
+            <div class="session-info">
+                <span class="badge" id="session-mode-badge">Configuring</span>
+                <h1 id="problem-title">Problem: Loading…</h1>
+                <div class="session-meta">
+                    <span id="candidate-name" aria-label="Candidate name">Candidate · Anonymous</span>
+                    <span id="session-timer" aria-label="Session timer">Timer · 00:00</span>
+                </div>
+            </div>
+            <div class="session-actions">
+                <button class="btn ghost" type="button" id="candidate-logout">Sign out</button>
+                <button class="btn secondary" type="button" onclick="requestHint()">Request hint</button>
+                <button class="btn primary" type="button" onclick="submitCode()">Submit &amp; evaluate</button>
+            </div>
+        </div>
+
+        <div class="session-grid">
+            <article class="session-card" aria-label="Coding workspace">
+                <header class="session-card-header">
+                    <span class="badge">Editor</span>
+                    <h2>Implement your solution</h2>
+                    <p id="problem-summary">Details loading…</p>
+                </header>
+                <div class="session-editor">
+                    <textarea id="code" rows="20" cols="80"></textarea>
+                </div>
+                <footer class="session-card-footer">
+                    <button class="btn secondary" type="button" onclick="requestHint()">Need context</button>
+                    <button class="btn primary" type="button" onclick="submitCode()">Submit solution</button>
+                </footer>
+            </article>
+
+            <aside class="session-sidebar" aria-label="Session insights">
+                <section class="session-insight" id="session-status-card" data-status="ok">
+                    <h3>Status overview</h3>
+                    <dl>
+                        <dt>Session state</dt>
+                        <dd id="session-status">Configuring</dd>
+                        <dt>Integrity</dt>
+                        <dd><span class="integrity-status" id="integrity-status">Clean focus</span></dd>
+                        <dt>Hints used</dt>
+                        <dd id="hint-count">0</dd>
+                    </dl>
+                </section>
+                <section class="session-insight">
+                    <h3>Active challenge</h3>
+                    <p class="subdued" id="challenge-detail">Awaiting assignment…</p>
+                </section>
+            </aside>
+        </div>
+
+        <article class="session-panel" aria-label="Live output">
+            <header class="session-panel-header">
+                <h3>Console</h3>
+                <span class="session-panel-subtitle">System events &amp; results</span>
+            </header>
+            <div id="output">
+                &gt; System ready. Waiting for session to start…
+            </div>
+        </article>
+
+        <div class="session-grid alt" id="insights-panels">
+            <section class="session-card" aria-labelledby="decision-title">
+                <header class="session-card-header" id="decision-title">Decision trail</header>
+                <ul id="decision-log" class="panel-list"></ul>
+            </section>
+            <section class="session-card" aria-labelledby="feedback-title">
+                <header class="session-card-header" id="feedback-title">Agent feedback</header>
+                <div id="agent-explanation" class="session-banner">Awaiting agent decisions…</div>
+                <ul id="agent-feedback" class="panel-list"></ul>
+            </section>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.js" integrity="sha512-t5Lcu24FbQybGnoIbv1GXDx633tW0Hd4reBUx74EIq/2Q39FzskADNbjc605pQA9kkojC+8bRXhHKEXoKJs3rw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/python/python.min.js" integrity="sha512-XEzz9RdeooPMK28QnWdk+gR3nJtnNbqi+kVh8MkPiOeJTtJSLR8OSB8sX1+gI2L4DbDDPgORcB4qWheoHrJm5g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="module" src="{{ url_for('static', path='js/pages/session.js') }}"></script>
+{% endblock %}
