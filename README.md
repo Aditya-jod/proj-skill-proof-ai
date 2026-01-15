@@ -156,7 +156,6 @@ Current repository layout (excluding the virtual environment, git metadata, and 
 │   └── problems.json
 ├── Documents/
 │   └── ... (marketing copy, assets, etc.)
-```
 ├── static/
 │   ├── css/
 │   │   ├── app.css
