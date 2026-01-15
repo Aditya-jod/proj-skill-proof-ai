@@ -1,0 +1,166 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}SkillProof AI · Admin Access{% endblock %}
+
+{% block body_class %}page-admin-access{% endblock %}
+
+{% block head_extra %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #0f172a;
+        }
+
+        .gradient-ring {
+            position: absolute;
+            inset: auto auto -140px -120px;
+            width: 480px;
+            height: 480px;
+            border-radius: 9999px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, rgba(14, 116, 144, 0) 70%);
+            pointer-events: none;
+        }
+    </style>
+{% endblock %}
+
+{% block navigation %}
+<nav class="sticky top-0 z-30 border-b border-white/10 backdrop-blur">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 text-slate-100">
+                <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-sky-500 flex items-center justify-center font-semibold">SP</span>
+                <span class="text-lg font-semibold">SkillProof AI</span>
+            </a>
+            <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-200">
+                <a href="/" class="hover:text-white transition">Home</a>
+                <a href="/features" class="hover:text-white transition">Features</a>
+                <a href="/use-cases" class="hover:text-white transition">Use Cases</a>
+                <a href="/about" class="hover:text-white transition">About</a>
+            </div>
+            <div class="hidden md:flex items-center gap-3">
+                <a href="/access" class="px-4 py-2 rounded-lg border border-white/20 text-sm font-medium text-white hover:bg-white/10 transition">Candidate Area</a>
+                <a href="/admin/login" class="px-4 py-2 rounded-lg bg-white text-slate-900 text-sm font-semibold hover:bg-slate-100 transition">Admin Sign In</a>
+            </div>
+            <button type="button" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg border border-white/10 text-white" aria-controls="admin-nav" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+        </div>
+        <div id="admin-nav" class="md:hidden hidden flex-col gap-3 pb-4 text-sm font-medium text-slate-200">
+            <a href="/" class="hover:text-white transition">Home</a>
+            <a href="/features" class="hover:text-white transition">Features</a>
+            <a href="/use-cases" class="hover:text-white transition">Use Cases</a>
+            <a href="/about" class="hover:text-white transition">About</a>
+            <a href="/access" class="hover:text-white transition">Candidate Area</a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="absolute top-0 inset-x-0 h-72 bg-gradient-to-br from-indigo-600/30 via-indigo-500/20 to-sky-500/10 blur-3xl" aria-hidden="true"></div>
+
+<div class="relative min-h-screen flex flex-col">
+    <main class="flex-1">
+        <section class="relative py-16 sm:py-24">
+            <div class="gradient-ring" aria-hidden="true"></div>
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid lg:grid-cols-5 gap-12 items-start">
+                    <div class="lg:col-span-3 text-slate-100 space-y-6">
+                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs uppercase tracking-wide text-slate-200">Admin control suite</span>
+                        <h1 class="text-3xl sm:text-4xl font-semibold leading-tight">Create or access your admin workspace.</h1>
+                        <p class="text-base text-slate-300 max-w-2xl">Provision new administrators with a few clicks, then step into a dashboard built for orchestrating coding cohorts, triaging integrity, and exporting candidate evidence.</p>
+                        <dl class="grid sm:grid-cols-2 gap-6 pt-4 text-sm text-slate-300">
+                            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                <dt class="font-medium text-white">Live oversight</dt>
+                                <dd class="mt-2">Monitor active sessions in real time with integrity signals surfaced instantly.</dd>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                <dt class="font-medium text-white">Explainable scoring</dt>
+                                <dd class="mt-2">Export transparent rubrics and playback data for confident hiring decisions.</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <div data-admin-auth data-admin-mode="login" class="relative rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl text-slate-900">
+                            <div class="absolute inset-0 rounded-3xl border border-white/10 pointer-events-none"></div>
+                            <div class="relative space-y-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-white">Admin credentials</p>
+                                        <h2 class="text-xl font-semibold text-white">Secure access</h2>
+                                    </div>
+                                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold text-white">Role · Admin</span>
+                                </div>
+
+                                <div data-admin-toggle class="inline-flex p-1 rounded-full bg-white/10">
+                                    <button type="button" data-mode="login" data-active="true" class="flex-1 px-4 py-2 text-sm font-medium text-white rounded-full transition">Sign in</button>
+                                    <button type="button" data-mode="register" data-active="false" class="flex-1 px-4 py-2 text-sm font-medium text-white/70 rounded-full transition hover:text-white">Create account</button>
+                                </div>
+
+                                <form data-admin-form class="space-y-5" autocomplete="on" novalidate>
+                                    <div data-admin-field="name" hidden>
+                                        <label for="admin-name" class="block text-sm font-medium text-white">Full name</label>
+                                        <input id="admin-name" name="name" type="text" placeholder="Casey Admin" autocomplete="name" required class="mt-2 w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-300 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-white/20">
+                                    </div>
+                                    <div>
+                                        <label for="admin-email" class="block text-sm font-medium text-white">Email address</label>
+                                        <input id="admin-email" name="email" type="email" inputmode="email" placeholder="admin@company.com" autocomplete="email" required class="mt-2 w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-300 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-white/20">
+                                    </div>
+                                    <div>
+                                        <label for="admin-password" class="block text-sm font-medium text-white">Password</label>
+                                        <input id="admin-password" name="password" type="password" placeholder="Your password" autocomplete="current-password" required minlength="8" class="mt-2 w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-300 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-white/20">
+                                    </div>
+
+                                    <p data-admin-error class="text-sm text-rose-200 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3" role="alert" hidden></p>
+
+                                    <button type="submit" data-admin-submit class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white text-slate-900 px-4 py-3 text-sm font-semibold shadow-md hover:bg-slate-100 transition">Sign in</button>
+                                </form>
+
+                                <p class="text-xs text-slate-300">New accounts receive immediate access to admin dashboards. Safeguard credentials and rotate regularly.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+{% endblock %}
+
+{% block footer %}
+<footer class="border-t border-white/10 bg-slate-950/60">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-slate-400">
+        <p>© 2026 SkillProof AI. Administrator console.</p>
+        <div class="flex items-center gap-4">
+            <a href="mailto:team@skillproof.ai" class="hover:text-white transition">Support</a>
+            <a href="/privacy" class="hover:text-white transition">Privacy</a>
+        </div>
+    </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        (function () {
+            const toggleButton = document.querySelector('nav button[aria-controls="admin-nav"]');
+            const mobileMenu = document.getElementById('admin-nav');
+            if (!toggleButton || !mobileMenu) {
+                return;
+            }
+            toggleButton.addEventListener('click', () => {
+                const expanded = toggleButton.getAttribute('aria-expanded') === 'true';
+                toggleButton.setAttribute('aria-expanded', (!expanded).toString());
+                mobileMenu.classList.toggle('hidden');
+            });
+        })();
+    </script>
+    <script type="module" src="{{ url_for('static', path='js/modules/auth.js') }}"></script>
+{% endblock %}

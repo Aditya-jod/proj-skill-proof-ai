@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}SkillProof AI · Candidate Access{% endblock %}
+
+{% block body_class %}page-access{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', path='css/pages/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-shell" aria-labelledby="access-heading">
+    <article class="form-card" data-auth-mode="login">
+        <header>
+            <span class="badge">Secure access</span>
+            <h1 id="access-heading">Sign in or create your SkillProof workspace.</h1>
+            <p>We personalize each session and keep your progress synced with the agents supporting you.</p>
+        </header>
+
+        <div class="mode-toggle" data-auth-mode-toggle>
+            <button type="button" class="toggle selected" data-mode="login" data-active="true">Sign in</button>
+            <button type="button" class="toggle" data-mode="register">Create account</button>
+        </div>
+
+        <form id="access-form" class="form-grid" autocomplete="on" novalidate data-auth-mode="login">
+            <div class="field" data-auth-section="register">
+                <label for="auth-name">Full name</label>
+                <input id="auth-name" name="name" type="text" inputmode="text" placeholder="Alex Johnson" autocomplete="name">
+            </div>
+            <div class="field">
+                <label for="auth-email">Email address</label>
+                <input id="auth-email" name="email" type="email" inputmode="email" placeholder="alex@team.com" autocomplete="email" required>
+                <p class="helper" data-auth-copy="register">We use your email to keep your session synced.</p>
+            </div>
+            <div class="field">
+                <label for="auth-password">Password</label>
+                <input id="auth-password" name="password" type="password" placeholder="Your password" minlength="8" autocomplete="current-password" required>
+                <p class="helper" data-auth-copy="register">Use at least eight characters mixing letters and numbers.</p>
+            </div>
+            <p id="auth-error" class="error" role="alert" hidden></p>
+            <div class="actions">
+                <a class="btn ghost" href="/">Back</a>
+                <button class="btn primary" type="submit" data-auth-submit>Continue</button>
+            </div>
+        </form>
+
+        <p class="notice">By continuing you consent to SkillProof AI storing the data required for this assessment. Your information stays encrypted at rest.</p>
+    </article>
+</section>
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="{{ url_for('static', path='js/modules/auth.js') }}"></script>
+{% endblock %}
