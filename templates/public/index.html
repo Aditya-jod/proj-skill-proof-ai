@@ -1,0 +1,379 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}SkillProof AI · Agentic Coding Assessments{% endblock %}
+
+{% block body_class %}page-home{% endblock %}
+
+{% block head_extra %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    :root {
+      --primary-700: #4338ca;
+      --primary-600: #4f46e5;
+      --primary-500: #6366f1;
+      --accent-500: #35a7ff;
+      --neutral-50: #f8fafc;
+      --neutral-100: #eef2ff;
+      --neutral-900: #0f172a;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #ffffff;
+      color: var(--neutral-900);
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary-600), var(--accent-500));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gradient-card {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(53, 167, 255, 0.05));
+    }
+
+    .glass-surface {
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .card-shadow {
+      box-shadow: 0 18px 45px -24px rgba(15, 23, 42, 0.25);
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 3vw, 2.75rem);
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .floating-dots::before,
+    .floating-dots::after {
+      content: '';
+      position: absolute;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(79, 70, 229, 0.14) 0%, rgba(79, 70, 229, 0) 70%);
+      filter: blur(0);
+      z-index: -1;
+    }
+
+    .floating-dots::before {
+      width: 240px;
+      height: 240px;
+      top: -80px;
+      right: -120px;
+    }
+
+    .floating-dots::after {
+      width: 180px;
+      height: 180px;
+      bottom: -60px;
+      left: -90px;
+    }
+
+    .stat-figure {
+      font-size: clamp(2.5rem, 5vw, 3.75rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      background: rgba(79, 70, 229, 0.12);
+      color: var(--primary-600);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .desktop-nav {
+        display: none;
+      }
+
+      .mobile-trigger {
+        display: inline-flex;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .mobile-menu {
+        display: none !important;
+      }
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex flex-col bg-white">
+  <main class="flex-1">
+    <section id="hero" class="relative overflow-hidden py-20 sm:py-24 lg:py-28 bg-neutral-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+          <div class="space-y-7">
+            <span class="badge-pill">Agentic AI assessment platform</span>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+              Hire smarter with <span class="gradient-text">agentic coding evaluations</span> that scale with you.
+            </h1>
+            <p class="text-lg text-slate-600 max-w-xl">
+              SkillProof AI blends live proctoring, contextual AI hints, and transparent scoring so every coding session stays fair, fast, and insightful.
+            </p>
+            <div class="flex flex-wrap gap-4">
+              <a href="/access" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 text-white font-semibold shadow-sm hover:bg-slate-800 transition">
+                Start assessment
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5-5 5M6 12h12" /></svg>
+              </a>
+              <a href="/dashboard" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition">
+                Admin dashboard
+              </a>
+            </div>
+            <div class="grid grid-cols-3 gap-6 pt-6">
+              <div>
+                <div class="stat-figure text-slate-900">12k+</div>
+                <p class="text-sm text-slate-500">Sessions orchestrated</p>
+              </div>
+              <div>
+                <div class="stat-figure text-slate-900">4</div>
+                <p class="text-sm text-slate-500">Specialist AI agents</p>
+              </div>
+              <div>
+                <div class="stat-figure text-slate-900">92%</div>
+                <p class="text-sm text-slate-500">Candidate engagement</p>
+              </div>
+            </div>
+          </div>
+          <div class="relative">
+            <div class="floating-dots absolute inset-0" aria-hidden="true"></div>
+            <div class="relative bg-white rounded-3xl border border-slate-200 p-6 shadow-xl card-shadow">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <p class="text-sm font-medium text-slate-500">Live coding session</p>
+                  <p class="text-base font-semibold text-slate-900">Frontend Challenge · React</p>
+                </div>
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-sm font-semibold">
+                  <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                  Proctoring on
+                </span>
+              </div>
+              <div class="bg-slate-950 rounded-xl overflow-hidden">
+                <div class="flex gap-2 px-5 py-3 bg-slate-900">
+                  <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                  <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                  <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                </div>
+                <pre class="font-mono text-[0.85rem] leading-relaxed text-slate-200 px-5 py-6">
+<span class="text-sky-400">class</span> IntegrityAgent:
+    <span class="text-emerald-400">def</span> monitor(self, event):
+        <span class="text-sky-400">if</span> event.tab_change:
+            self.raise_flag("Tab switch detected")
+        <span class="text-sky-400">elif</span> event.copy_paste:
+            self.warn("Copied code from external source")
+
+<span class="text-sky-400">class</span> HintAgent:
+    <span class="text-emerald-400">def</span> suggest(self, progress):
+        <span class="text-sky-400">if</span> progress.stalled:
+            <span class="text-fuchsia-400">return</span> "Review edge cases for sorting logic"
+                </pre>
+              </div>
+              <div class="mt-6 grid gap-4">
+                <div class="flex items-center justify-between bg-neutral-100 rounded-xl px-4 py-3">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">Adaptive hints</p>
+                    <p class="text-sm text-slate-500">Learning diagnosis agent drafted contextual prompt.</p>
+                  </div>
+                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-semibold">AI Assist</span>
+                </div>
+                <div class="flex items-center justify-between bg-neutral-100 rounded-xl px-4 py-3">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">Integrity pulse</p>
+                    <p class="text-sm text-slate-500">No suspicious activity within the last 15 minutes.</p>
+                  </div>
+                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 text-xs font-semibold">Stable</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="platform" class="py-20 bg-[#0f172a] text-slate-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto space-y-4">
+          <h2 class="section-title text-white">How SkillProof AI orchestrates every assessment.</h2>
+          <p class="text-lg text-slate-300">Four collaborative agents evaluate behavior, provide coaching, and surface decision-grade evidence as sessions unfold.</p>
+        </div>
+        <div class="mt-16 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 gradient-card">
+            <h3 class="text-lg font-semibold text-white">Candidate Workspace</h3>
+            <p class="mt-3 text-sm text-slate-300">Secure IDE with live execution, file tracking, and auto-save built for realistic coding flows.</p>
+          </div>
+          <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 gradient-card">
+            <h3 class="text-lg font-semibold text-white">Integrity Agent</h3>
+            <p class="mt-3 text-sm text-slate-300">Monitors device signals, clipboard events, and tab changes to preserve fairness.</p>
+          </div>
+          <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 gradient-card">
+            <h3 class="text-lg font-semibold text-white">Hint Agent</h3>
+            <p class="mt-3 text-sm text-slate-300">Delivers contextual guidance so candidates learn without giving away the answer.</p>
+          </div>
+          <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 gradient-card">
+            <h3 class="text-lg font-semibold text-white">Evaluation Agent</h3>
+            <p class="mt-3 text-sm text-slate-300">Scores solutions with unit tests, static analysis, and rubric alignment in real time.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="py-20 bg-neutral-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto space-y-4">
+          <h2 class="section-title text-slate-900">Features that keep teams confident.</h2>
+          <p class="text-lg text-slate-600">From controlled environments to deep analytics, SkillProof AI covers the entire assessment lifecycle.</p>
+        </div>
+        <div class="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <article class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-lg transition">
+            <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold mb-5">01</div>
+            <h3 class="text-xl font-semibold text-slate-900 mb-3">Live integrity telemetry</h3>
+            <p class="text-sm text-slate-600">Behavioral fingerprinting, device checks, and automated alerts keep every session trusted.</p>
+          </article>
+          <article class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-lg transition">
+            <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold mb-5">02</div>
+            <h3 class="text-xl font-semibold text-slate-900 mb-3">Contextual AI coaching</h3>
+            <p class="text-sm text-slate-600">Agentic hints unblock candidates while preserving difficulty, so you see authentic skill.</p>
+          </article>
+          <article class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-lg transition">
+            <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold mb-5">03</div>
+            <h3 class="text-xl font-semibold text-slate-900 mb-3">Decision-grade scoring</h3>
+            <p class="text-sm text-slate-600">Comprehensive reports summarise code quality, problem solving steps, and integrity posture.</p>
+          </article>
+          <article class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-lg transition">
+            <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold mb-5">04</div>
+            <h3 class="text-xl font-semibold text-slate-900 mb-3">Session orchestration</h3>
+            <p class="text-sm text-slate-600">Launch cohorts, swap challenges, and monitor workloads from a single admin cockpit.</p>
+          </article>
+          <article class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-lg transition">
+            <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold mb-5">05</div>
+            <h3 class="text-xl font-semibold text-slate-900 mb-3">Compliance controls</h3>
+            <p class="text-sm text-slate-600">Granular permissions, audit history, and secure data retention keep regulators satisfied.</p>
+          </article>
+          <article class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-lg transition">
+            <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold mb-5">06</div>
+            <h3 class="text-xl font-semibold text-slate-900 mb-3">Extensible problem library</h3>
+            <p class="text-sm text-slate-600">Import your own challenges or pull from curated tracks ready for hiring, bootcamps, or upskilling.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="use-cases" class="py-20 bg-[#0f172a] text-slate-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-3 gap-10 items-start">
+          <div class="lg:col-span-1 space-y-5">
+            <h2 class="section-title text-white">Built for every technical talent journey.</h2>
+            <p class="text-lg text-slate-300">Universities, bootcamps, and engineering orgs trust SkillProof AI to validate skill at pace without compromising integrity.</p>
+          </div>
+          <div class="lg:col-span-2 grid md:grid-cols-2 gap-6">
+            <div class="rounded-3xl border border-white/10 bg-white/5 p-8">
+              <h3 class="text-xl font-semibold text-white">Engineering Hiring</h3>
+              <p class="mt-3 text-sm text-slate-300">Replace take-home tests with supervised, interactive assessments that mirror the job.</p>
+              <ul class="mt-5 space-y-2 text-sm text-slate-300">
+                <li>• Transparent candidate playback</li>
+                <li>• Interview-ready scoring exports</li>
+                <li>• Collaborative evaluation notes</li>
+              </ul>
+            </div>
+            <div class="rounded-3xl border border-white/10 bg-white/5 p-8">
+              <h3 class="text-xl font-semibold text-white">Academic Integrity</h3>
+              <p class="mt-3 text-sm text-slate-300">Deliver fair exams to hundreds of students with AI invigilation and adaptive guidance.</p>
+              <ul class="mt-5 space-y-2 text-sm text-slate-300">
+                <li>• LMS-ready cohort imports</li>
+                <li>• Automated flag triage</li>
+                <li>• Insightful skills analytics</li>
+              </ul>
+            </div>
+            <div class="rounded-3xl border border-white/10 bg-white/5 p-8">
+              <h3 class="text-xl font-semibold text-white">Upskilling &amp; L&amp;D</h3>
+              <p class="mt-3 text-sm text-slate-300">Coach engineers through new stacks with practice modes that still track integrity.</p>
+              <ul class="mt-5 space-y-2 text-sm text-slate-300">
+                <li>• Skill gap diagnostics</li>
+                <li>• Personalized hint strategy</li>
+                <li>• Unified capability dashboards</li>
+              </ul>
+            </div>
+            <div class="rounded-3xl border border-white/10 bg-white/5 p-8">
+              <h3 class="text-xl font-semibold text-white">Bootcamp Placements</h3>
+              <p class="mt-3 text-sm text-slate-300">Give hiring partners proof of mastery with explainable scoring and replayable sessions.</p>
+              <ul class="mt-5 space-y-2 text-sm text-slate-300">
+                <li>• Candidate highlight reels</li>
+                <li>• Badge-based achievements</li>
+                <li>• Employer-ready reports</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="py-20 bg-neutral-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <div class="space-y-6">
+            <h2 class="section-title text-slate-900">Why we built SkillProof AI.</h2>
+            <p class="text-lg text-slate-600">We experienced first-hand how traditional coding assessments fall short—too static for real problem solving, too easy to game, and too opaque for decision makers.</p>
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900">Human-centered by design</h3>
+                <p class="text-sm text-slate-600">Candidates stay engaged thanks to meaningful hints and smooth UX while admins stay informed with clear signals.</p>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900">AI you can audit</h3>
+                <p class="text-sm text-slate-600">Every recommendation, flag, and score is explainable so teams can trust the outcomes.</p>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-3xl border border-slate-200 glass-surface p-10 shadow-xl bg-white">
+            <span class="badge-pill mb-5">Live admin dashboard</span>
+            <h3 class="text-2xl font-semibold text-slate-900 mb-6">Monitor every cohort in one view.</h3>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between bg-neutral-100 rounded-2xl px-4 py-3">
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">Active sessions</p>
+                  <p class="text-xs text-slate-500">24 candidates monitored in real time</p>
+                </div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 text-xs font-semibold">Healthy</span>
+              </div>
+              <div class="flex items-center justify-between bg-neutral-100 rounded-2xl px-4 py-3">
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">Integrity alerts</p>
+                  <p class="text-xs text-slate-500">7 cases triaged, 2 escalated</p>
+                </div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-600 text-xs font-semibold">Actioned</span>
+              </div>
+              <div class="flex items-center justify-between bg-neutral-100 rounded-2xl px-4 py-3">
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">Candidate satisfaction</p>
+                  <p class="text-xs text-slate-500">92% positive feedback on guidance</p>
+                </div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-600 text-xs font-semibold">Trending</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+{% endblock %}
