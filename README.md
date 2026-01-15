@@ -89,12 +89,11 @@ Configure these in `.env` (local) or your hosting provider:
 
 ## File Structure
 
-Full repository layout (excluding virtual environment, git metadata, and `__pycache__` directories):
+Current repository layout (excluding the virtual environment, git metadata, and cache directories):
 
 ```text
+```text
 .
-├── .env
-├── .gitignore
 ├── README.md
 ├── requirements.txt
 ├── skillproof.db
@@ -157,36 +156,56 @@ Full repository layout (excluding virtual environment, git metadata, and `__pyca
 │   └── problems.json
 ├── Documents/
 │   └── ... (marketing copy, assets, etc.)
+```
 ├── static/
 │   ├── css/
-│   │   ├── access.css
 │   │   ├── app.css
-│   │   ├── dashboard.css
-│   │   ├── home.css
-│   │   ├── main.css
-│   │   └── styles.css
+│   │   ├── base/
+│   │   │   ├── main.css
+│   │   │   └── variables.css
+│   │   ├── components/
+│   │   │   ├── footer.css
+│   │   │   └── navbar.css
+│   │   └── pages/
+│   │       ├── auth.css
+│   │       ├── dashboard.css
+│   │       ├── home.css
+│   │       └── session.css
 │   └── js/
-│       ├── access.js
-│       ├── admin-login.js
-│       ├── auth.js
-│       ├── dashboard.js
-│       ├── footer.js
-│       ├── main.js
-│       ├── navbar.js
-│       └── site.js
+│       ├── components/
+│       │   ├── footer.js
+│       │   └── navbar.js
+│       ├── modules/
+│       │   ├── api.js
+│       │   └── auth.js
+│       └── pages/
+│           ├── dashboard.js
+│           ├── landing.js
+│           └── session.js
 ├── templates/
-│   ├── about.html
-│   ├── access.html
-│   ├── admin_login.html
-│   ├── dashboard.html
-│   ├── features.html
-│   ├── index.html
-│   ├── platform.html
-│   ├── session.html
-│   └── use_cases.html
-├── tmp/
-│   └── (empty or transient files)
-└── .venv/ (virtual environment, excluded from tree)
+│   ├── layouts/
+│   │   └── base.html
+│   ├── components/
+│   │   ├── footer.html
+│   │   └── navbar.html
+│   ├── auth/
+│   │   ├── admin.html
+│   │   ├── login.html
+│   │   └── register.html
+│   ├── dashboard/
+│   │   └── index.html
+│   ├── public/
+│   │   ├── about.html
+│   │   ├── features.html
+│   │   ├── index.html
+│   │   ├── platform.html
+│   │   └── use_cases.html
+│   └── session/
+│       └── index.html
+├── Documents/
+│   └── … (marketing copy, assets, etc.)
+└── tmp/
+   └── compute_sri.py
 ```
 
 ## Troubleshooting
