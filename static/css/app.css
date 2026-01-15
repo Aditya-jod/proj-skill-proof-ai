@@ -35,7 +35,7 @@
   --radius-md: 8px;
   --radius-sm: 6px;
   --radius-pill: 9999px;
-  --nav-height: 72px;      /* Reduced slightly for better proportion */
+  --nav-height: 112px;     /* Height reserved for fixed navigation */
   --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   --max-width: 1280px;
   
