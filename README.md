@@ -92,7 +92,6 @@ Configure these in `.env` (local) or your hosting provider:
 Current repository layout (excluding the virtual environment, git metadata, and cache directories):
 
 ```text
-```text
 .
 ├── README.md
 ├── requirements.txt
