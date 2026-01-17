@@ -1,171 +1,153 @@
-import json
+# app/services/problem_repository.py
+
+import logging
 import random
-from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 from uuid import uuid4
 
-from .ai_service import ai_service
+from .ai_service import get_ai_service
 from .session_state import ProblemSpec
 
+logger = logging.getLogger("skillproof.problem_repository")
+
+
+# =========================================================
+# CACHE
+# =========================================================
+
+class ProblemCache:
+    def __init__(self):
+        self._store: Dict[Tuple[str, str, str, str], List[ProblemSpec]] = {}
+
+    def _key(self, topic: str, difficulty: str, user_id: Optional[str], session_id: Optional[str]) -> Tuple[str, str, str, str]:
+        return (
+            topic.lower(),
+            difficulty.lower(),
+            user_id or "_anon_",
+            session_id or "_anon_",
+        )
+
+    def get(self, topic: str, difficulty: str, user_id: Optional[str], session_id: Optional[str]) -> List[ProblemSpec]:
+        return self._store.setdefault(self._key(topic, difficulty, user_id, session_id), [])
+
+    def add(self, problem: ProblemSpec, user_id: Optional[str], session_id: Optional[str]) -> None:
+        bucket = self.get(problem.topic, problem.difficulty, user_id, session_id)
+        bucket.append(problem)
+        if len(bucket) > 5:
+            del bucket[:-5]
+
+    def clear(self) -> None:
+        self._store.clear()
+
+
+# =========================================================
+# GENERATOR
+# =========================================================
+
+class ProblemGenerator:
+    MAX_ATTEMPTS = 5
+
+    def generate(
+        self,
+        topic: str,
+        difficulty: str,
+        exclude_ids: Set[str],
+        user_id: Optional[str],
+        session_id: Optional[str],
+    ) -> Optional[ProblemSpec]:
+
+        for attempt in range(1, self.MAX_ATTEMPTS + 1):
+            try:
+                payload = get_ai_service().generate_problem_spec(
+                    topic=topic,
+                    difficulty=difficulty,
+                    user_id=user_id,
+                    session_id=session_id,
+                    seed=random.randint(0, 1_000_000),
+                    temperature=0.8,
+                )
+            except Exception:
+                logger.exception("AI generation failed")
+                continue
+
+            payload.setdefault("id", f"{topic}-{difficulty}-{uuid4().hex[:8]}")
+            if payload["id"] in exclude_ids:
+                continue
+
+            try:
+                return ProblemSpec(**payload)
+            except Exception:
+                logger.exception("Invalid ProblemSpec from AI")
+                return None
+
+        return None
+
+
+# =========================================================
+# REPOSITORY
+# =========================================================
 
 class ProblemRepository:
-    def __init__(self, data_path: Optional[Path] = None) -> None:
-        base_path = Path(__file__).resolve().parents[2] / "data" / "problems.json"
-        self._data_path = Path(data_path) if data_path else base_path
-        self._store: Dict[Tuple[str, str], List[ProblemSpec]] = {}
-        self._static_store: Dict[Tuple[str, str], List[ProblemSpec]] = self._load_static()
-        self._random = random.Random()
+    def __init__(self):
+        self._cache = ProblemCache()
+        self._generator = ProblemGenerator()
+        self._rng = random.Random()
 
-    def _cache_key(self, topic: str, difficulty: str) -> Tuple[str, str]:
-        return (topic.strip().lower(), difficulty.strip().lower())
+    def _fallback_problem(self, topic: str, difficulty: str) -> ProblemSpec:
+        return ProblemSpec(
+            id=f"fallback-{uuid4().hex[:8]}",
+            topic=topic,
+            difficulty=difficulty,
+            title="Debug the Logic Error",
+            description="The function below contains a logical bug. Fix it.",
+            starter_code=(
+                "def solve(n):\n"
+                "    if n == 0:\n"
+                "        return 1  # BUG\n"
+                "    return n + solve(n - 1)\n"
+            ),
+            entrypoint="solve",
+            hints={
+                "conceptual": "Check the base case.",
+                "strategic": "What should solve(0) return?",
+                "implementation": "Fix the incorrect return value.",
+            },
+            tests=[
+                {"args": [3], "kwargs": {}, "expected": 6},
+                {"args": [0], "kwargs": {}, "expected": 0},
+            ],
+            bug_hint="Base case returns incorrect value",
+        )
 
-    def _cache(self, topic: str, difficulty: str) -> List[ProblemSpec]:
-        key = self._cache_key(topic, difficulty)
-        return self._store.setdefault(key, [])
-
-    def _load_static(self) -> Dict[Tuple[str, str], List[ProblemSpec]]:
-        mapping: Dict[Tuple[str, str], List[ProblemSpec]] = {}
-        if not self._data_path.exists():
-            return mapping
-        try:
-            with self._data_path.open("r", encoding="utf-8") as handle:
-                raw = json.load(handle)
-        except (OSError, json.JSONDecodeError):
-            return mapping
-
-        for item in raw:
-            try:
-                problem = ProblemSpec(**item)
-            except TypeError:
-                continue
-            key = self._cache_key(problem.topic, problem.difficulty)
-            mapping.setdefault(key, []).append(problem)
-        return mapping
-
-    def _generate_problem(self, topic: str, difficulty: str, *, exclude_ids: Set[str]) -> Optional[ProblemSpec]:
-        attempts = 0
-        while attempts < 3:
-            attempts += 1
-            try:
-                payload = ai_service.generate_problem_spec(topic=topic, difficulty=difficulty)
-            except Exception:
-                continue
-            if not isinstance(payload, dict):
-                continue
-
-            payload.setdefault("topic", topic)
-            payload.setdefault("difficulty", difficulty)
-            payload.setdefault("hints", {})
-            payload.setdefault("tests", [])
-            payload.setdefault("starter_code", "")
-            payload.setdefault("entrypoint", "solve")
-
-            payload["title"] = str(payload.get("title", f"{topic.title()} challenge"))
-            payload["description"] = str(payload.get("description", "Implement the required behaviour."))
-            payload["starter_code"] = str(payload.get("starter_code", ""))
-            payload["entrypoint"] = str(payload.get("entrypoint", "solve"))
-
-            problem_id = payload.get("id") or f"{topic.lower()}-{difficulty.lower()}-{uuid4().hex[:8]}"
-            if problem_id in exclude_ids:
-                continue
-
-            payload["id"] = problem_id
-
-            topic_value = str(payload.get("topic", topic)).strip().lower() or topic
-            difficulty_value = str(payload.get("difficulty", difficulty)).strip().lower() or difficulty
-            payload["topic"] = topic_value
-            payload["difficulty"] = difficulty_value
-
-            hints = payload.get("hints", {})
-            if not isinstance(hints, dict):
-                hints = {}
-            payload["hints"] = {
-                "conceptual": hints.get("conceptual", "Break the problem into smaller steps."),
-                "strategic": hints.get("strategic", "Consider edge cases and input constraints."),
-                "implementation": hints.get("implementation", "Outline helper functions before coding."),
-            }
-
-            tests: Sequence[Dict[str, object]] = payload.get("tests", [])  # type: ignore[assignment]
-            filtered_tests: List[Dict[str, object]] = []
-            for test in tests:
-                if not isinstance(test, dict):
-                    continue
-                args = test.get("args", [])
-                kwargs = test.get("kwargs", {})
-                if not isinstance(args, list) or not isinstance(kwargs, dict):
-                    continue
-                filtered_tests.append({
-                    "args": args,
-                    "kwargs": kwargs,
-                    "expected": test.get("expected"),
-                })
-            if not filtered_tests:
-                continue
-
-            payload["tests"] = filtered_tests
-
-            try:
-                problem = ProblemSpec(**payload)
-            except TypeError:
-                continue
-
-            cache_bucket = self._cache(problem.topic, problem.difficulty)
-            cache_bucket.append(problem)
-            return problem
-        return None
-
-    def all(self) -> Iterable[ProblemSpec]:
-        for problems in self._store.values():
-            for problem in problems:
-                yield problem
-
-    def by_topic(self, topic: str) -> List[ProblemSpec]:
-        topic_key = topic.strip().lower()
-        collected: List[ProblemSpec] = []
-        for (cached_topic, _), problems in self._store.items():
-            if cached_topic == topic_key:
-                collected.extend(problems)
-        return collected
-
-    def find(self, topic: str, difficulty: str, *, exclude_ids: Optional[Iterable[str]] = None) -> Optional[ProblemSpec]:
-        exclude: Set[str] = set(exclude_ids or [])
-        bucket = self._cache(topic, difficulty)
-        candidates = [problem for problem in bucket if problem.id not in exclude]
-        if not candidates:
-            static_key = self._cache_key(topic, difficulty)
-            static_candidates = [problem for problem in self._static_store.get(static_key, []) if problem.id not in exclude]
-            if static_candidates:
-                selected = self._random.choice(static_candidates)
-                bucket.append(selected)
-                return selected
-            generated = self._generate_problem(topic, difficulty, exclude_ids=exclude)
-            if generated:
-                return generated
-        else:
-            return self._random.choice(candidates)
-        return None
-
-    def fallback(
+    def find(
         self,
         topic: str,
         difficulty: str,
         *,
         exclude_ids: Optional[Iterable[str]] = None,
-    ) -> Optional[ProblemSpec]:
-        exclude: Set[str] = set(exclude_ids or [])
-        ordering = ["easy", "medium", "hard"]
-        try:
-            idx = ordering.index(difficulty)
-        except ValueError:
-            idx = 1
+        user_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+    ) -> ProblemSpec:
 
-        search_order = ordering[idx:] + ordering[:idx]
-        for diff in search_order:
-            candidate = self.find(topic, diff, exclude_ids=exclude)
-            if candidate:
-                return candidate
-        return self._generate_problem(topic, difficulty, exclude_ids=exclude)
+        exclude = set(exclude_ids or [])
+        cached = [
+            p for p in self._cache.get(topic, difficulty, user_id, session_id)
+            if p.id not in exclude
+        ]
+
+        if cached:
+            return self._rng.choice(cached)
+
+        problem = self._generator.generate(topic, difficulty, exclude, user_id, session_id)
+        if problem:
+            self._cache.add(problem, user_id, session_id)
+            return problem
+
+        logger.critical("AI generation failed — using fallback")
+        fallback = self._fallback_problem(topic, difficulty)
+        self._cache.add(fallback, user_id, session_id)
+        return fallback
 
     def refresh(self) -> None:
-        self._store.clear()
-        self._static_store = self._load_static()
+        self._cache.clear()
+# =========================================================
