@@ -16,7 +16,8 @@ class ProblemSpec:
     starter_code: str
     entrypoint: str
     tests: List[Dict[str, Any]]
-    hints: Dict[str, str]
+    hints: List[str]
+    bug_hint: Optional[str] = None
 
     def for_delivery(self) -> Dict[str, Any]:
         return {
@@ -259,19 +260,28 @@ class SessionState:
         self.hints.append(HintRecord(level=level, text=text, created_at=datetime.utcnow()))
 
     def record_decision(self, agent: str, decision: Dict[str, Any]) -> None:
+        import logging
+        logger = logging.getLogger("skillproof.session_state")
         entry = {
             "agent": agent,
             "decision": decision,
             "timestamp": datetime.utcnow().isoformat(),
         }
+        logger.info("Decision recorded", extra={"session_id": getattr(self, 'session_id', None), "agent": agent, "decision": decision})
         self.decision_history.append(entry)
 
     def append_feedback(self, agent: str, note: str) -> None:
+        import logging
+        logger = logging.getLogger("skillproof.session_state")
         timestamp = datetime.utcnow().isoformat()
+        logger.info("Feedback appended", extra={"session_id": getattr(self, 'session_id', None), "agent": agent, "note": note})
         self.agent_feedback.setdefault(agent, []).append(note)
         self.feedback_events.append({"agent": agent, "note": note, "timestamp": timestamp})
 
     def latest_submission(self) -> Optional[SubmissionRecord]:
+        import logging
+        logger = logging.getLogger("skillproof.session_state")
+        logger.info("Latest submission requested", extra={"session_id": getattr(self, 'session_id', None), "has_submission": bool(self.submissions)})
         if not self.submissions:
             return None
         return self.submissions[-1]
