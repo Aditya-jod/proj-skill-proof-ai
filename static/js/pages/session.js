@@ -24,6 +24,7 @@ const sessionStatusCard = document.getElementById('session-status-card');
 const integrityStatus = document.getElementById('integrity-status');
 const hintCount = document.getElementById('hint-count');
 const logoutButton = document.getElementById('candidate-logout');
+const resumeButton = document.getElementById('resume-session');
 
 let editor;
 let editorIsCodeMirror = false;
@@ -113,6 +114,13 @@ const updateSessionStatus = (statusText, severity = 'ok') => {
     }
     if (sessionStatusCard) {
         sessionStatusCard.dataset.status = severity;
+    }
+    if (resumeButton) {
+        if (statusText === 'paused' || statusText === 'terminated') {
+            resumeButton.style.display = '';
+        } else {
+            resumeButton.style.display = 'none';
+        }
     }
 };
 
@@ -358,6 +366,14 @@ window.requestHint = () => {
     sendMessage('hint_requested', {});
     appendOutputMessage('> Hint requested.', 'info');
 };
+
+if (resumeButton) {
+    resumeButton.addEventListener('click', () => {
+        sendMessage('resume_session', {});
+        appendOutputMessage('> Resume requested. If session is eligible, it will be reactivated.', 'info');
+        resumeButton.style.display = 'none';
+    });
+}
 
 socket.addEventListener('open', () => {
     socketReady = true;
