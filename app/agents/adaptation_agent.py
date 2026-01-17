@@ -12,6 +12,89 @@ PROMOTION_PASS_REQUIREMENTS = {
 }
 
 
+
+# --- SRP: ProblemSelector ---
+class ProblemSelector:
+    @staticmethod
+    def select(repository: ProblemRepository, topic: str, difficulty: str, exclude_ids: set) -> Optional[ProblemSpec]:
+        return repository.find(topic, difficulty, exclude_ids=exclude_ids) or repository.fallback(topic, difficulty, exclude_ids=exclude_ids)
+
+# --- SRP: ProblemPromotion ---
+class ProblemPromotion:
+    @staticmethod
+    def promote(repository: ProblemRepository, state: SessionState) -> Optional[ProblemSpec]:
+        required_passes = PROMOTION_PASS_REQUIREMENTS.get(state.difficulty, 3)
+        if state.consecutive_passes() < required_passes:
+            return None
+        ladder = ["easy", "medium", "hard"]
+        try:
+            idx = ladder.index(state.difficulty)
+        except ValueError:
+            idx = 0
+        if idx >= len(ladder) - 1:
+            return None
+        target_diff = ladder[idx + 1]
+        exclude_ids = set(state.assigned_problem_ids)
+        if state.current_problem:
+            exclude_ids.add(state.current_problem.id)
+        candidate = repository.find(state.topic, target_diff, exclude_ids=exclude_ids) or repository.fallback(state.topic, target_diff, exclude_ids=exclude_ids)
+        if not candidate:
+            return None
+        state.mark_problem(candidate)
+        return candidate
+
+# --- SRP: ProblemRemediation ---
+class ProblemRemediation:
+    @staticmethod
+    def remediate(repository: ProblemRepository, state: SessionState) -> Optional[ProblemSpec]:
+        ladder = ["easy", "medium", "hard"]
+        try:
+            idx = ladder.index(state.difficulty)
+        except ValueError:
+            idx = 0
+        if idx == 0:
+            return None
+        target_diff = ladder[idx - 1]
+        exclude_ids = set(state.assigned_problem_ids)
+        if state.current_problem:
+            exclude_ids.add(state.current_problem.id)
+        candidate = repository.find(state.topic, target_diff, exclude_ids=exclude_ids) or repository.fallback(state.topic, target_diff, exclude_ids=exclude_ids)
+        if not candidate:
+            return None
+        state.mark_problem(candidate)
+        return candidate
+
+# --- SRP: ProblemRefresh ---
+class ProblemRefresh:
+    @staticmethod
+    def refresh(repository: ProblemRepository, state: SessionState) -> Optional[ProblemSpec]:
+        exclude_ids = set(state.assigned_problem_ids)
+        if state.current_problem:
+            exclude_ids.add(state.current_problem.id)
+        candidate = repository.find(state.topic, state.difficulty, exclude_ids=exclude_ids)
+        if not candidate:
+            return None
+        state.mark_problem(candidate)
+        return candidate
+
+# --- SRP: FailureCounter ---
+class FailureCounter:
+    @staticmethod
+    def recent_failures(state: SessionState) -> int:
+        current_difficulty = state.difficulty
+        count = 0
+        inspected = 0
+        for record in reversed(state.submissions):
+            if record.difficulty != current_difficulty:
+                continue
+            inspected += 1
+            if record.status != "passed":
+                count += 1
+            if inspected >= 3:
+                break
+        return count
+
+# --- SRP: AdaptationAgent orchestrates the process ---
 class AdaptationAgent(BaseAgent):
     def __init__(self, repository: Optional[ProblemRepository] = None) -> None:
         super().__init__(name="adaptation")
@@ -35,11 +118,7 @@ class AdaptationAgent(BaseAgent):
         exclude_ids = set(state.assigned_problem_ids)
         if state.current_problem:
             exclude_ids.add(state.current_problem.id)
-        problem = self._repository.find(topic, requested_difficulty, exclude_ids=exclude_ids) or self._repository.fallback(
-            topic,
-            requested_difficulty,
-            exclude_ids=exclude_ids,
-        )
+        problem = ProblemSelector.select(self._repository, topic, requested_difficulty, exclude_ids)
         self._candidate = problem
         if not problem:
             return AgentDecision(
@@ -92,94 +171,22 @@ class AdaptationAgent(BaseAgent):
         decision = None
         next_problem: Optional[ProblemSpec] = None
         if evaluation.get("status") == "passed":
-            next_problem = self._promote_problem(state)
+            next_problem = ProblemPromotion.promote(self._repository, state)
             if next_problem:
                 decision = "advance"
             else:
-                next_problem = self._refresh_problem(state)
+                next_problem = ProblemRefresh.refresh(self._repository, state)
                 if next_problem:
                     decision = "reinforce"
         else:
-            failures = self._recent_failures(state)
+            failures = FailureCounter.recent_failures(state)
             if failures >= 3:
-                next_problem = self._remediate_problem(state)
+                next_problem = ProblemRemediation.remediate(self._repository, state)
                 if next_problem:
                     decision = "remediate"
             else:
                 next_problem = None
 
-        if decision and state.current_problem and next_problem:
-            return {"decision": decision, "new_problem": state.current_problem.for_delivery()}
+        if decision and next_problem:
+            return {"decision": decision, "new_problem": next_problem.for_delivery()}
         return {}
-
-    def _promote_problem(self, state: SessionState) -> Optional[ProblemSpec]:
-        required_passes = PROMOTION_PASS_REQUIREMENTS.get(state.difficulty, 3)
-        if state.consecutive_passes() < required_passes:
-            return None
-
-        ladder = ["easy", "medium", "hard"]
-        try:
-            idx = ladder.index(state.difficulty)
-        except ValueError:
-            idx = 0
-        if idx >= len(ladder) - 1:
-            return None
-        target_diff = ladder[idx + 1]
-        exclude_ids = set(state.assigned_problem_ids)
-        if state.current_problem:
-            exclude_ids.add(state.current_problem.id)
-        candidate = self._repository.find(state.topic, target_diff, exclude_ids=exclude_ids) or self._repository.fallback(
-            state.topic,
-            target_diff,
-            exclude_ids=exclude_ids,
-        )
-        if not candidate:
-            return None
-        state.mark_problem(candidate)
-        return candidate
-
-    def _remediate_problem(self, state: SessionState) -> Optional[ProblemSpec]:
-        ladder = ["easy", "medium", "hard"]
-        try:
-            idx = ladder.index(state.difficulty)
-        except ValueError:
-            idx = 0
-        if idx == 0:
-            return None
-        target_diff = ladder[idx - 1]
-        exclude_ids = set(state.assigned_problem_ids)
-        if state.current_problem:
-            exclude_ids.add(state.current_problem.id)
-        candidate = self._repository.find(state.topic, target_diff, exclude_ids=exclude_ids) or self._repository.fallback(
-            state.topic,
-            target_diff,
-            exclude_ids=exclude_ids,
-        )
-        if not candidate:
-            return None
-        state.mark_problem(candidate)
-        return candidate
-
-    def _recent_failures(self, state: SessionState) -> int:
-        current_difficulty = state.difficulty
-        count = 0
-        inspected = 0
-        for record in reversed(state.submissions):
-            if record.difficulty != current_difficulty:
-                continue
-            inspected += 1
-            if record.status != "passed":
-                count += 1
-            if inspected >= 3:
-                break
-        return count
-
-    def _refresh_problem(self, state: SessionState) -> Optional[ProblemSpec]:
-        exclude_ids = set(state.assigned_problem_ids)
-        if state.current_problem:
-            exclude_ids.add(state.current_problem.id)
-        candidate = self._repository.find(state.topic, state.difficulty, exclude_ids=exclude_ids)
-        if not candidate:
-            return None
-        state.mark_problem(candidate)
-        return candidate
