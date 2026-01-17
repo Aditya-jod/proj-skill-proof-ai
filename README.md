@@ -1,11 +1,14 @@
 # SkillProof AI
 
+
 SkillProof AI is an agentic assessment platform that coordinates multiple autonomous services to adapt challenges, analyze learner code, defend assessment integrity, and surface transparent feedback in real time. The backend exposes FastAPI endpoints and WebSockets, while a lightweight frontend delivers the candidate and admin experiences.
+
+**Now powered by Groq AI for dynamic problem generation, hints, and code analysis.**
 
 ## Feature Highlights
 
 - **Persistent Accounts** – Email/password registration with PBKDF2 hashing, admin seeding on startup, and session-backed authentication.
-- **Dynamic Problem Generation** – `ProblemRepository` requests fresh coding challenges from Google Gemini (JSON constraints enforced) with automatic fallback to the local catalog when the API is unavailable.
+- **Dynamic Problem Generation** – `ProblemRepository` requests fresh coding challenges from Groq AI (JSON constraints enforced) with automatic fallback to a built-in fallback when the API is unavailable.
 - **Agent Orchestration** – The orchestrator routes events through adaptation, evaluation, hinting, learning diagnosis, and integrity agents, each following a strict observe → decide → act → explain loop.
 - **Real-Time Insights** – WebSocket streams deliver decision logs, integrity alerts, hints, and evaluation summaries to both the candidate IDE and admin dashboard.
 - **Integrity Enforcement** – Focus loss, inactivity, webcam, and tab-switch signals escalate through warn → pause → terminate policies, keeping administrators informed.
@@ -14,7 +17,7 @@ SkillProof AI is an agentic assessment platform that coordinates multiple autono
 ## Technology Stack
 
 - Python 3.12, FastAPI, Uvicorn, SQLAlchemy, Pydantic v2, Starlette sessions
-- Google Gemini (google.generativeai) for hints, problem generation, and code analysis
+- Groq AI (llama3-70b-8192 or similar) for hints, problem generation, and code analysis
 - Vanilla JavaScript, Jinja2 templates, CSS modules for the UI
 - WebSockets for live session streaming
 
@@ -27,11 +30,13 @@ SkillProof AI is an agentic assessment platform that coordinates multiple autono
 
 ## Environment Variables
 
+
 Configure these in `.env` (local) or your hosting provider:
 
 | Variable | Description |
 | --- | --- |
-| `GOOGLE_API_KEY` | Required. Gemini API key used by `AIService` for hints, analysis, and problem generation. |
+| `GROQ_API_KEY` | Required. Groq API key used by `AIService` for hints, analysis, and problem generation. |
+| `GROQ_MODEL` | Optional. Groq model name (e.g., llama3-70b-8192). |
 | `DATABASE_URL` | Optional. SQLAlchemy connection string (defaults to `sqlite:///./skillproof.db`). |
 | `SESSION_SECRET_KEY` | Required. Random string for signing session cookies. |
 | `ADMIN_EMAIL` | Required. Seeded admin account email. |
@@ -65,14 +70,14 @@ Configure these in `.env` (local) or your hosting provider:
 ## Deployment Notes
 
 - Render or similar platforms should use `uvicorn app.main:app --host 0.0.0.0 --port $PORT` as the start command.
-- Remember to set all environment variables in the host dashboard; Gemini requests will fail without `GOOGLE_API_KEY`.
+- Remember to set all environment variables in the host dashboard; Groq requests will fail without `GROQ_API_KEY`.
 - SQLite works for demos, but move to managed Postgres by switching `DATABASE_URL` in production.
 
 ## Agents Overview
 
 | Agent | Responsibilities |
 | --- | --- |
-| `AdaptationAgent` | Requests problems from Gemini (with JSON validation and caching) and escalates/remediates difficulty based on recent performance. |
+| `AdaptationAgent` | Requests problems from Groq AI (with JSON validation and caching) and escalates/remediates difficulty based on recent performance. |
 | `LearningDiagnosisAgent` | Analyzes submissions for guessing vs mastery, updates the skill profile, and surfaces targeted feedback. |
 | `HintStrategyAgent` | Chooses conceptual/strategic/implementation hints, enforces cooldowns, and calls Gemini for natural-language guidance. |
 | `IntegrityAgent` | Monitors focus, inactivity, tab switches, and webcam alerts to enforce warn/pause/terminate policies. |
@@ -82,9 +87,9 @@ Configure these in `.env` (local) or your hosting provider:
 ## How It Works
 
 1. User signs in or registers; the session cookie captures the user payload.
-2. When a session starts, the orchestrator calls `AdaptationAgent`, which fetches (or falls back to cached/static) problems via `ProblemRepository`.
+2. When a session starts, the orchestrator calls `AdaptationAgent`, which fetches (or falls back to cached/fallback) problems via `ProblemRepository`.
 3. Learner submissions invoke `EvaluationAgent` and `LearningDiagnosisAgent`, which provide scoring and reasoning analysis.
-4. Hint requests route through `HintStrategyAgent`, which may query Gemini for guidance.
+4. Hint requests route through `HintStrategyAgent`, which may query Groq AI for guidance.
 5. Integrity events continuously update the dashboard and session state severity.
 
 ## File Structure
@@ -208,13 +213,13 @@ Current repository layout (excluding the virtual environment, git metadata, and 
 
 ## Troubleshooting
 
-- **Gemini errors** – Ensure `GOOGLE_API_KEY` is valid; the repository will fall back to `data/problems.json` if the API fails repeatedly.
+- **Groq errors** – Ensure `GROQ_API_KEY` is valid; the repository will fall back to a built-in fallback if the API fails repeatedly.
 - **Authentication issues** – Confirm admin credentials in environment variables and restart the app to trigger seeding.
 - **Render deploy fails on `email_validator`** – `requirements.txt` includes the dependency; redeploy after pulling the latest changes.
 
 ## Roadmap
 
-- Migrate from `google.generativeai` to the newer `google.genai` SDK per deprecation notice.
+- Fully migrated from Gemini to Groq AI for all agentic tasks.
 - Add automated testing for agent decision flows and API endpoints.
 - Expand problem validation (static type checks, runtime guardrails) before releasing Gemini-generated challenges to users.
 
