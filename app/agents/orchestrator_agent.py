@@ -27,17 +27,42 @@ class OrchestratorAgent:
             "code_submitted": self._handle_code_submitted,
             "hint_requested": self._handle_hint_requested,
             "session_end": self._handle_session_end,
+            "resume_session": self._handle_resume_session,
         }
+
+    def _handle_resume_session(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        self.logger.info("Orchestrator: Resume session requested", extra={"payload": payload})
+        # Only allow resume if session is paused or terminated
+        if self.state.status in {"paused", "terminated"}:
+            self.state.status = "active"
+            self.state.integrity.paused = False
+            self.state.integrity.terminated = False
+            self.state.integrity.severity = "normal"
+            return {
+                "type": "session_resumed",
+                "status": self.state.status,
+                "message": "Session resumed. You may continue.",
+                "integrity": self.state.integrity.as_dict(),
+            }
+        return {
+            "type": "session_resumed",
+            "status": self.state.status,
+            "message": "Session is not paused or terminated. No action taken.",
+            "integrity": self.state.integrity.as_dict(),
+        }
+
+
+    import logging
+    logger = logging.getLogger("skillproof.orchestrator_agent")
 
     def handle_event(self, event_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         try:
             envelope = self._build_envelope(event_type, payload)
             self._publish_envelope(envelope)
             self._advance_integrity_clock(event_type)
-
+            self.logger.info("Orchestrator: Handling event", extra={"event_type": event_type, "payload": payload})
             if event_type in {"focus_lost", "focus_gained", "webcam_alert"}:
                 return self._handle_integrity_event(event_type, payload)
-
             handler = self._handlers.get(event_type)
             if handler:
                 return handler(payload)
@@ -59,6 +84,50 @@ class OrchestratorAgent:
                 "decision_log": self.state.decision_history[-5:],
                 "feedback": self.state.agent_feedback,
             }
+
+    def _handle_session_start(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        self.logger.info("Orchestrator: Starting session", extra={"payload": payload})
+        self.state.mode = payload.get("mode", self.state.mode)
+        response = self.adaptation_agent.execute(self.state, payload)
+        response.setdefault("meta", {})["skill_profile"] = self.state.skill_profile.as_dict()
+        response["decision_log"] = self.state.decision_history[-3:]
+        return response
+
+    def _handle_code_submitted(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        self.logger.info("Orchestrator: Code submitted", extra={"payload": payload})
+        evaluation_bundle = self.evaluation_agent.execute(self.state, payload)
+        submission = self.state.latest_submission()
+        learning = self.learning_agent.execute(
+            self.state,
+            payload,
+            {"submission": submission, "evaluation": evaluation_bundle["result"]},
+        ) if submission else {"type": "learning_diagnosis", "message": "No submission"}
+        adaptation_update = self.adaptation_agent.after_submission(self.state, evaluation_bundle["result"])
+        response: Dict[str, Any] = {
+            "type": "code_feedback",
+            "evaluation": evaluation_bundle["result"],
+            "submission": evaluation_bundle["submission_metrics"],
+            "diagnosis": learning,
+            "skill_profile": self.state.skill_profile.as_dict(),
+            "integrity": self.state.integrity.as_dict(),
+            "status": self.state.status,
+            "decision_log": self.state.decision_history[-5:],
+            "feedback": self.state.agent_feedback,
+        }
+        if adaptation_update.get("new_problem"):
+            response["next_problem"] = {
+                "decision": adaptation_update.get("decision"),
+                "payload": adaptation_update["new_problem"],
+            }
+        return response
+
+    def _handle_hint_requested(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        self.logger.info("Orchestrator: Hint requested", extra={"payload": payload})
+        hint = self.hint_agent.execute(self.state, payload)
+        hint["skill_profile"] = self.state.skill_profile.as_dict()
+        hint["decision_log"] = self.state.decision_history[-3:]
+        return hint
+
 
     def _build_envelope(self, event_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         return {
@@ -89,25 +158,7 @@ class OrchestratorAgent:
             payload,
             {"submission": submission, "evaluation": evaluation_bundle["result"]},
         ) if submission else {"type": "learning_diagnosis", "message": "No submission"}
-        adaptation_update = self.adaptation_agent.after_submission(self.state, evaluation_bundle["result"])
 
-        response: Dict[str, Any] = {
-            "type": "code_feedback",
-            "evaluation": evaluation_bundle["result"],
-            "submission": evaluation_bundle["submission_metrics"],
-            "diagnosis": learning,
-            "skill_profile": self.state.skill_profile.as_dict(),
-            "integrity": self.state.integrity.as_dict(),
-            "status": self.state.status,
-            "decision_log": self.state.decision_history[-5:],
-            "feedback": self.state.agent_feedback,
-        }
-        if adaptation_update.get("new_problem"):
-            response["next_problem"] = {
-                "decision": adaptation_update.get("decision"),
-                "payload": adaptation_update["new_problem"],
-            }
-        return response
 
     def _handle_hint_requested(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         hint = self.hint_agent.execute(self.state, payload)
