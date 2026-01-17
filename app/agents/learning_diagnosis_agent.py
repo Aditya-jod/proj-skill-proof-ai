@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 
 from .base_agent import BaseAgent
 from ..core.decision import AgentDecision
-from ..services.ai_service import ai_service
+from ..services.ai_service import get_ai_service
 from ..services.session_state import SessionState, SubmissionRecord
 
 
@@ -170,14 +170,15 @@ class LearningDiagnosisAgent(BaseAgent):
     def _generate_ai_notes(self, state: SessionState) -> str:
         if not self._submission or not self._submission.code:
             return ""
-        problem_payload: Optional[Dict[str, Any]] = None
-        if state.current_problem:
-            problem_payload = {
-                "title": state.current_problem.title,
-                "description": state.current_problem.description,
-            }
+        context = {
+            "code": self._submission.code,
+            "problem": {
+                "title": state.current_problem.title if state.current_problem else None,
+                "description": state.current_problem.description if state.current_problem else None,
+            } if state.current_problem else {},
+        }
         try:
-            analysis = ai_service.get_code_analysis(self._submission.code, problem_payload)
-        except Exception:  # pragma: no cover - network/service errors
+            analysis = get_ai_service().analyze_behavior(context)
+        except Exception:
             return ""
         return analysis.get("analysis", "").strip()
