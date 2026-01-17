@@ -14,6 +14,15 @@ from .session_state import SessionState
 
 
 class SessionManager:
+    def _create_persistent_session(self, state: SessionState) -> str:
+        db = SessionLocal()
+        try:
+            record = crud_session.create_session(db, SessionCreate(user_id=state.user_id, mode=state.mode))
+            return record.id
+        except Exception as exc:
+            raise ServiceError("Failed to create session record", code="session_create_failed", context={"error": str(exc)}) from exc
+        finally:
+            db.close()
     def __init__(self) -> None:
         self._problem_repository = ProblemRepository()
         self._active: Dict[str, Dict[str, object]] = {}
@@ -59,32 +68,6 @@ class SessionManager:
     def record_feedback(self, state: SessionState) -> None:
         if not state.session_id or not state.feedback_events:
             return
-        db = SessionLocal()
-        try:
-            for event in state.feedback_events:
-                payload = AgentFeedbackCreate(
-                    session_id=state.session_id,
-                    agent=event["agent"],
-                    note=event["note"],
-                )
-                crud_agent_feedback.create_feedback(db, payload)
-            state.feedback_events.clear()
-        except Exception as exc:  # pylint: disable=broad-except
-            error_payload = build_error_payload(
-                ServiceError(
-                    "Failed to persist feedback",
-                    code="feedback_persist_failed",
-                    context={"session_id": state.session_id, "error": str(exc)},
-                )
-            ).as_dict()
-            state.append_feedback("system", f"error: {error_payload['message']}")
-        finally:
-            db.close()
-
-    def all_states(self) -> Dict[str, SessionState]:
-        return {key: bundle["state"] for key, bundle in self._active.items()}
-
-    def _create_persistent_session(self, state: SessionState) -> Optional[int]:
         db = SessionLocal()
         try:
             record = crud_session.create_session(db, SessionCreate(user_id=state.user_id, mode=state.mode))
