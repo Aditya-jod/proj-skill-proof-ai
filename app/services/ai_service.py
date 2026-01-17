@@ -1,120 +1,227 @@
-from __future__ import annotations
+# app/services/ai_service.py
 
+import time
 import json
-import re
-from typing import Any, Dict, Optional
-
-from google import genai
+import logging
+import requests
+from typing import Any, Dict, Optional, List
 
 from ..config import settings
 
+logger = logging.getLogger("skillproof.ai_service")
+
+
+# =========================================================
+# API CLIENT (transport only)
+# =========================================================
+
+class GroqClient:
+    BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+    def __init__(self):
+        self.api_key = settings.GROQ_API_KEY
+        self.model = settings.GROQ_MODEL
+
+        if not self.api_key:
+            raise RuntimeError("GROQ_API_KEY missing")
+
+    def chat(
+        self,
+        messages: List[Dict[str, str]],
+        *,
+        max_tokens: int,
+        temperature: float,
+        retries: int = 2,
+    ) -> str:
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
+
+        for attempt in range(retries + 1):
+            try:
+                logger.info("Calling Groq API", extra={"attempt": attempt})
+                resp = requests.post(
+                    self.BASE_URL,
+                    headers=headers,
+                    json=payload,
+                    timeout=20,
+                )
+                if resp.status_code != 200:
+                    try:
+                        error_body = resp.json()
+                    except Exception:
+                        error_body = resp.text
+                    logger.error(f"Groq API error: {resp.status_code} - {error_body}")
+                    resp.raise_for_status()
+                return resp.json()["choices"][0]["message"]["content"].strip()
+
+            except Exception:
+                logger.exception("Groq API call failed")
+                if attempt >= retries:
+                    raise
+                time.sleep(1.5 * (attempt + 1))
+
+
+# =========================================================
+# PROMPT BUILDER
+# =========================================================
+
+class PromptBuilder:
+    @staticmethod
+    def build_problem_prompt(
+        *,
+        topic: str,
+        difficulty: str,
+        user_id: Optional[str],
+        session_id: Optional[str],
+        seed: Optional[int],
+    ) -> str:
+        return (
+            "You are an expert programming challenge designer.\n"
+            "Your task is to generate a DEBUGGING problem.\n\n"
+            "STRICT RULES:\n"
+            "- Starter code MUST contain a buggy implementation\n"
+            "- DO NOT return stubs, pass, TODO, or comments-only code\n"
+            "- Tests MUST fail on the buggy code\n"
+            "- Problem must be original and non-trivial\n"
+            "- Return ONLY valid JSON, no explanations, no markdown, no extra text, no code blocks, no comments, no preamble or postamble.\n"
+            "- The 'hints' field MUST be a list of strings.\n\n"
+            f"Topic: {topic}\n"
+            f"Difficulty: {difficulty}\n"
+            f"User: {user_id or 'anonymous'}\n"
+            f"Session: {session_id or 'none'}\n"
+            f"Seed: {seed or 'none'}\n\n"
+            "Required JSON keys:\n"
+            "id, topic, difficulty, title, description,\n"
+            "starter_code, entrypoint, hints, tests, bug_hint\n"
+        )
+
+
+# =========================================================
+# JSON EXTRACTION
+# =========================================================
+
+class JSONExtractor:
+    @staticmethod
+    def extract(text: str) -> Dict[str, Any]:
+        # Try direct JSON parse first
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            pass
+
+        # Bracket counting fallback (robust to extra text)
+        start = text.find("{")
+        if start == -1:
+            raise ValueError("No JSON found in AI response")
+        depth = 0
+        for i in range(start, len(text)):
+            if text[i] == "{":
+                depth += 1
+            elif text[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(text[start:i + 1])
+                    except Exception:
+                        break
+        raise ValueError("Unbalanced JSON")
+
+
+# =========================================================
+# PROBLEM VALIDATION
+# =========================================================
+
+class ProblemValidator:
+    REQUIRED_FIELDS = {
+        "id", "topic", "difficulty", "title",
+        "description", "starter_code", "entrypoint",
+        "hints", "tests", "bug_hint"
+    }
+
+    @staticmethod
+    def validate(problem: Dict[str, Any]) -> None:
+        missing = ProblemValidator.REQUIRED_FIELDS - problem.keys()
+        if missing:
+            raise ValueError(f"Missing fields: {missing}")
+
+        code = str(problem["starter_code"]).strip()
+        if not code or "pass" in code:
+            raise ValueError("starter_code is a stub")
+
+        if not isinstance(problem["tests"], list) or not problem["tests"]:
+            raise ValueError("Invalid tests")
+
+        if not isinstance(problem["hints"], list):
+            raise ValueError("Invalid hints: must be a list of strings")
+
+
+# =========================================================
+# AI SERVICE (orchestration only)
+# =========================================================
 
 class AIService:
-    """Wrapper around Google AI Studio (Gemini) text generations."""
+    def __init__(self):
+        self.client = GroqClient()
 
-    def __init__(self) -> None:
-        if not settings.GOOGLE_API_KEY:
-            raise ValueError("GOOGLE_API_KEY missing. Add it to your .env file.")
+    def generate_problem_spec(
+        self,
+        *,
+        topic: str,
+        difficulty: str,
+        user_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+        seed: Optional[int] = None,
+        temperature: float = 0.7,
+    ) -> Dict[str, Any]:
 
-        self._client = genai.Client(api_key=settings.GOOGLE_API_KEY)
-        self._model_name = "gemini-1.5-pro"
-        self._generation_config = genai.types.GenerateContentConfig(
-            temperature=0.4,
-            top_p=0.95,
-            top_k=40,
-            max_output_tokens=512,
+        prompt = PromptBuilder.build_problem_prompt(
+            topic=topic,
+            difficulty=difficulty,
+            user_id=user_id,
+            session_id=session_id,
+            seed=seed,
         )
 
-    def _ask_model(self, prompt: str) -> str:
-        try:
-            response = self._client.models.generate_content(
-                model=self._model_name,
-                contents=prompt,
-                config=self._generation_config,
+        max_tokens = 1500  # Increased for more complete responses
+        retries = 2
+        for attempt in range(retries + 1):
+            raw = self.client.chat(
+                [{"role": "user", "content": prompt}],
+                max_tokens=max_tokens,
+                temperature=temperature,
             )
-        except Exception as exc:  # pragma: no cover - network errors
-            raise RuntimeError(f"Gemini request failed: {exc}") from exc
-
-        text = (response.text or "").strip()
-        if not text:
-            raise RuntimeError("Gemini returned an empty response.")
-        return text
-
-    def get_code_analysis(self, code: str, problem: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
-        summary_intro = (
-            "You are SkillProof AI's learning diagnosis specialist. "
-            "Inspect the Python submission below and produce three concise bullet points: "
-            "(1) correctness status, (2) style/readability observation, and (3) one actionable improvement."
-        )
-        problem_context = (
-            f"\nProblem description: {problem['description']}" if problem and problem.get("description") else ""
-        )
-        prompt = (
-            f"{summary_intro}{problem_context}\nReturn each bullet on its own line and keep the response under 120 words.\n\n"
-            f"Learner submission:\n```python\n{code}\n```"
-        )
-        try:
-            analysis = self._ask_model(prompt)
-        except RuntimeError:
-            analysis = "Unable to retrieve AI feedback right now."
-        return {"analysis": analysis}
-
-    def generate_hint(self, context: Dict[str, Any]) -> str:
-        level = context.get("level", "conceptual")
-        problem = context.get("problem", {})
-        fallback = context.get("fallback_hint")
-        learner_code = context.get("code") or "# Learner has not submitted code yet."
-        failure_summary = context.get("evaluation_summary", "")
-
-        prompt = (
-            "You are SkillProof AI's hint strategist. Provide a single, practical hint at the "
-            f"{level} level for the problem below. Do not reveal the full solution. Keep the hint under 90 words, "
-            "phrase it in second person (\"you\"), and end with one guiding question.\n\n"
-            f"Problem title: {problem.get('title', 'Unknown Problem')}\n"
-            f"Problem description: {problem.get('description', 'No description available.')}\n"
-            f"Difficulty: {problem.get('difficulty', 'unknown')} | Topic: {problem.get('topic', 'unknown')}\n"
-            f"Recent evaluation summary: {failure_summary or 'No automated feedback available.'}\n"
-            "Existing static hint (if any): "
-            f"{fallback or 'None provided.'}\n\n"
-            "Latest learner submission:\n"
-            f"```python\n{learner_code}\n```"
-        )
-
-        try:
-            return self._ask_model(prompt)
-        except RuntimeError:
-            return fallback or ""
-
-    def generate_problem_spec(self, *, topic: str, difficulty: str) -> Dict[str, Any]:
-        instructions = (
-            "You are SkillProof AI's problem author. Create a Python coding challenge. "
-            "Respond with JSON ONLY (no markdown, no commentary). The JSON object must have keys: "
-            "title, description, difficulty, topic, starter_code, entrypoint, tests, hints. "
-            "Follow these rules:\n"
-            "- difficulty must exactly match the requested difficulty.\n"
-            "- topic must exactly match the requested topic.\n"
-            "- starter_code should define the function signature with TODO comments but no solution.\n"
-            "- entrypoint must match the function name in starter_code.\n"
-            "- tests must be an array with at least three items; each item needs args (array), kwargs (object), expected (JSON-serialisable).\n"
-            "- hints must be an object with keys: conceptual, strategic, implementation. Keep each hint under 60 words.\n"
-            "- Use only JSON literals; do not include python-specific syntax like tuples.\n"
-        )
-        prompt = (
-            f"{instructions}\n"
-            f"Requested topic: {topic}.\nRequested difficulty: {difficulty}.\n"
-            "Return the JSON object now."
-        )
-
-        raw = self._ask_model(prompt)
-        try:
-            return json.loads(raw)
-        except json.JSONDecodeError:
-            match = re.search(r"\{.*\}", raw, re.DOTALL)
-            if not match:
-                raise RuntimeError("Gemini returned non-JSON problem spec") from None
+            logger.info(f"Raw AI response received: {raw}")
             try:
-                return json.loads(match.group(0))
-            except json.JSONDecodeError as exc:
-                raise RuntimeError("Unable to parse Gemini problem spec JSON") from exc
+                data = JSONExtractor.extract(raw)
+                ProblemValidator.validate(data)
+                return data
+            except ValueError as e:
+                logger.error(f"AI response parse error (attempt {attempt+1}): {e}\nRaw: {raw}")
+                if attempt >= retries:
+                    # Optionally, return a user-friendly error or None
+                    logger.critical("AI generation failed after retries due to incomplete or malformed JSON.")
+                    return None
 
-ai_service = AIService()
+
+# =========================================================
+# SINGLETON
+# =========================================================
+
+_ai_service: Optional[AIService] = None
+
+
+def get_ai_service() -> AIService:
+    global _ai_service
+    if _ai_service is None:
+        _ai_service = AIService()
+        logger.info("AIService singleton created")
+    return _ai_service
