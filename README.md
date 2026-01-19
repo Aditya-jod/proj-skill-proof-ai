@@ -204,11 +204,10 @@ Current repository layout (excluding the virtual environment, git metadata, and 
 │   │   ├── platform.html
 │   │   └── use_cases.html
 │   └── session/
+│   └── session/
 │       └── index.html
-├── Documents/
-│   └── … (marketing copy, assets, etc.)
-└── tmp/
-   └── compute_sri.py
+```
+
 ```
 
 ## Troubleshooting
