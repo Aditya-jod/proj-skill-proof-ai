@@ -208,7 +208,6 @@ Current repository layout (excluding the virtual environment, git metadata, and 
 │       └── index.html
 ```
 
-```
 
 ## Troubleshooting
 
