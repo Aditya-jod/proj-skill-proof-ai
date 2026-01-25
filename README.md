@@ -158,8 +158,6 @@ Current repository layout (excluding the virtual environment, git metadata, and 
 │       └── session_state.py
 ├── data/
 │   └── problems.json
-├── Documents/
-│   └── ... (marketing copy, assets, etc.)
 ├── static/
 │   ├── css/
 │   │   ├── app.css
@@ -186,17 +184,17 @@ Current repository layout (excluding the virtual environment, git metadata, and 
 │           ├── landing.js
 │           └── session.js
 ├── templates/
-│   ├── layouts/
-│   │   └── base.html
-│   ├── components/
-│   │   ├── footer.html
-│   │   └── navbar.html
 │   ├── auth/
 │   │   ├── admin.html
 │   │   ├── login.html
 │   │   └── register.html
+│   ├── components/
+│   │   ├── footer.html
+│   │   └── navbar.html
 │   ├── dashboard/
 │   │   └── index.html
+│   ├── layouts/
+│   │   └── base.html
 │   ├── public/
 │   │   ├── about.html
 │   │   ├── features.html
@@ -204,9 +202,11 @@ Current repository layout (excluding the virtual environment, git metadata, and 
 │   │   ├── platform.html
 │   │   └── use_cases.html
 │   └── session/
-│   └── session/
 │       └── index.html
+└── tmp/
 ```
+
+> Note: A local `.venv/` virtual environment exists for development but is excluded here for brevity.
 
 
 ## Troubleshooting
